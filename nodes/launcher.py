@@ -1,3 +1,8 @@
+import time
+import sys
+import subprocess
+import psutil
+
 import rospy
 
 import roslaunch
@@ -6,17 +11,14 @@ from roslaunch.core import RLException
 from roslaunch.config import load_config_default 
 from rospkg.common import ResourceNotFound
 
-uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-roslaunch.configure_logging(uuid)
-
 class Launcher:
-    def __init__(self, launchfile):
+    def __init__(self, package, launchfile):
+
+        self.package = package
 
         self.launchfile = launchfile
         self.name = launchfile.split("/")[-1].split(".launch")[0]
         self.prettyname = self.name.replace("_", " ")
-
-        self.launcher = roslaunch.parent.ROSLaunchParent(uuid, [self.launchfile])
 
         self.reachable=True
         self.desc = ""
@@ -56,6 +58,12 @@ class Launcher:
         self.has_args = bool(self.args)
         self.readytolaunch = self.checkargs()
 
+        self.pid = None
+
+        self.isrunning()
+        if(self.pid):
+            rospy.logwarn("Launch file <%s> is already running. Fine, I'm attaching myself to it." % self.name)
+
     def checkargs(self):
         """Check whether all the arguments are defined
         """
@@ -77,9 +85,76 @@ class Launcher:
 
         self.readytolaunch = self.checkargs()
 
+    def make_rl_cmd(self):
+        argcmd = [a + ":=" + str(v[1]) for a,v in self.args.items()]
+        return ["roslaunch", self.package, self.name + ".launch"] + argcmd
+
 
     def start(self):
 
+        if self.isrunning():
+            rospy.logwarn("Launch file <%s> is already running. PID: %d" % (self.name, self.pid))
+            return
+
         if self.reachable and self.readytolaunch:
-            self.launcher.start()
+            cmd = self.make_rl_cmd()
+            rospy.loginfo("Starting: " + " ".join(cmd))
+            self.pid = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr).pid
+
+    def isrunning(self):
+        """Returns true if this launch file is running, False otherwise
+
+        Set or update self.pid accordingly.
+
+        Attention! The process might have been started by someone else! (like on the command-line)
+        """
+        proc = None
+
+        if self.pid:
+            try:
+                proc = psutil.Process(self.pid)
+                return True
+            except psutil.NoSuchProcess:
+                self.pid = None
+
+        roslaunch_processes = []
+        for proc in psutil.process_iter():
+            try:
+                pinfo = proc.as_dict(attrs=['pid', 'name','cmdline'])
+                if pinfo["name"] == "roslaunch":
+                    roslaunch_processes.append(pinfo)
+            except psutil.NoSuchProcess:
+                pass
+
+        for p in roslaunch_processes:
+            if     p["cmdline"][2] == self.package \
+               and p["cmdline"][3] == self.name + ".launch":
+                   self.pid = p["pid"]
+
+        return True if self.pid is not None else False
+
+    def shutdown(self):
+        """Properly terminate the roslaunch process, starting with all the children, and
+        then the main process.
+        Kill them if necessary.
+
+        TODO: how does that work with nodes marked as 'respawn'?
+        """
+        if self.isrunning():
+            psutil.Process(self.pid).terminate()
+
+            proc = psutil.Process(self.pid)
+            children = psutil.Process(self.pid).children()
+
+            for p in children:
+                p.terminate()
+            gone, still_alive = psutil.wait_procs(children, timeout=5)
+            for p in still_alive:
+                p.kill()
+
+            proc.terminate()
+            gone, still_alive = psutil.wait_procs([proc], timeout=5)
+            for p in still_alive:
+                p.kill()
+
 

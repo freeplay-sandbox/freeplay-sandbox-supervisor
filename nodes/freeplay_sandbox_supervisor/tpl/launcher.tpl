@@ -1,7 +1,7 @@
 <tr>
     <td>{% if launcher.reachable %}
         {% if launcher.readytolaunch %}
-        <button alt="Start this launch file" class="btn btn-sm btn-success" onclick="launch('{{launcher.name}}',[1,2,3])"><i class="fa fa-play"></i></button>
+        <button id="{{launcher.name}}_startstop" alt="Start this launch file" class="btn btn-sm btn-success" onclick="launch.call($(this),'{{launcher.name}}',this.value)" value="start"><i class="fa fa-play"></i></button>
         {% else %}
         <button alt="Some arguments are missing" class="btn btn-sm btn-warning"><i class="fa fa-question"></i></button>
         {% endif %}

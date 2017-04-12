@@ -121,11 +121,47 @@ function setarg(launchfile, arg, value) {
         });
 }
 
-function launch(launchfile, args) {
-    $.get('{{path}}?action=start&launch=' + launchfile + '&args=' + args, function(data) {
-            console.log(data);
-            });
+function togglerunning(btn, isrunning) {
+                    $(btn).toggleClass('btn-danger', isrunning);
+                    $(btn).children().toggleClass('fa-stop', isrunning);
+
+                    if(isrunning) {
+                        $(btn).prop("value", "stop");
+                    }
+                    else {
+                        $(btn).prop("value", "start");
+                    }
+
 }
+
+function launch(launchfile, action) {
+    $.ajax({
+        url:'{{path}}?action=' + action + '&launch=' + launchfile,
+        dataType: "json",
+        context: this,
+        success: function(isrunning) {
+                    togglerunning(this, isrunning);
+                }
+
+        });
+}
+
+function updaterunningstate() {
+    $.ajax({
+        url:'{{path}}?action=updatestate',
+        dataType: "json",
+        context: this,
+        success: function(runningstates) {
+                for (var l in runningstates) {
+                    togglerunning($("#"+l+"_startstop")[0], runningstates[l]);
+                    }
+
+                }
+        });
+}
+
+var intervalID = window.setInterval(updaterunningstate, 1000);
+
 </script>
 </body>
 </html>

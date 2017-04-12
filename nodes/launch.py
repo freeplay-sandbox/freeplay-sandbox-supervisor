@@ -16,12 +16,12 @@ from rospkg import RosPack
 import threading 
 import time
 
-import ast
+import json
+
+
+rospy.init_node('freeplay_sandbox_supervisor')
 
 from launcher import Launcher
-
-
-#rospy.init_node('freeplay_sandbox_supervisor')
 
 package = "freeplay_sandbox"
 
@@ -33,7 +33,7 @@ launchers = []
 for root, dirs, files in os.walk(rp.get_path(package)):
     for file in files:
         if file.endswith(".launch"):
-             launchers.append(Launcher(os.path.join(root, file)))
+             launchers.append(Launcher(package, os.path.join(root, file)))
 
 
 env = Environment(loader=PackageLoader('freeplay_sandbox_supervisor', 'tpl'))
@@ -59,20 +59,27 @@ def process_launch(options):
         rospy.logwarn("Attempting to launch inexistant %s" % launchfile)
         return False
 
-    rospy.loginfo("Attempting to launch %s" % launcher.launchfile)
+    if "start" in options["action"]:
+        launcher.start()
+    elif "stop" in options["action"]:
+        launcher.shutdown()
 
-    launcher.start()
+    return "true" if launcher.isrunning() else "false"
 
 def records(path, options):
 
     if "action" in options:
         if "start" in options["action"]:
             return process_launch(options)
+        elif "stop" in options["action"]:
+            return process_launch(options)
         elif "setarg" in options["action"]:
             launcher = getlauncher(options["launch"][0])
             launcher.setarg(options["arg"][0],
                             options.get("value", [None])[0])
             return launcher_tpl.generate(launcher=launcher, showargs=True)
+        elif "updatestate" in options["action"]:
+            return json.dumps({l.name: l.isrunning() for l in launchers})
 
 
 
