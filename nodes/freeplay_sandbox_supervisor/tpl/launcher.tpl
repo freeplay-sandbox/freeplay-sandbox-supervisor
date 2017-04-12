@@ -3,7 +3,7 @@
         {% if launcher.readytolaunch %}
         <button id="{{launcher.name}}_startstop" alt="Start this launch file" class="btn btn-sm btn-success" onclick="launch.call($(this),'{{launcher.name}}',this.value)" value="start"><i class="fa fa-play"></i></button>
         {% else %}
-        <button alt="Some arguments are missing" class="btn btn-sm btn-warning"><i class="fa fa-question"></i></button>
+        <button alt="Some arguments are missing" class="btn btn-sm btn-warning" onclick="$('#{{launcher.name}}_args_btn').trigger('click')"><i class="fa fa-question"></i></button>
         {% endif %}
         {% else %}
         <span class="label label-warning"><i class="fa fa-question"></i></span>
@@ -11,7 +11,7 @@
     </td>
     <td><strong>{{ "%s" % launcher.prettyname}}</strong></td>
     <td>{% if launcher.has_args %}
-        <button class="btn btn-sm btn-info" data-toggle="button" onclick="$('#{{launcher.name}}_args').toggle('fast');$(':first-child',this).toggleClass('fa-plus fa-minus')"><i {% if showargs %}class="fa fa-minus"{% else %}class="fa fa-plus"{% endif %}></i></button>
+        <button id="{{launcher.name}}_args_btn" class="btn btn-sm btn-info" data-toggle="button" onclick="$('#{{launcher.name}}_args').toggle('fast');$(':first-child',this).toggleClass('fa-plus fa-minus')"><i {% if showargs %}class="fa fa-minus"{% else %}class="fa fa-plus"{% endif %}></i></button>
         {% endif %}
     </td>
     <td>
