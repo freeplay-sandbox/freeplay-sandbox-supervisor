@@ -11,7 +11,7 @@
     </td>
     <td><strong>{{ "%s" % launcher.prettyname}}</strong></td>
     <td>{% if launcher.has_args %}
-        <button class="btn btn-sm btn-info" data-toggle="button" onclick="$('#{{launcher.name}}_args').toggle();$(':first-child',this).toggleClass('fa-plus fa-minus')"><i {% if showargs %}class="fa fa-minus"{% else %}class="fa fa-plus"{% endif %}></i></button>
+        <button class="btn btn-sm btn-info" data-toggle="button" onclick="$('#{{launcher.name}}_args').toggle('fast');$(':first-child',this).toggleClass('fa-plus fa-minus')"><i {% if showargs %}class="fa fa-minus"{% else %}class="fa fa-plus"{% endif %}></i></button>
         {% endif %}
     </td>
     <td>
