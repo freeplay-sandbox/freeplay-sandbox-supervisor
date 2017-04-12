@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-import logging; logger = logging.getLogger("main")
-FORMAT = '%(asctime)s - %(levelname)s: %(message)s'
-logging.basicConfig(format=FORMAT, level=logging.DEBUG)
 
 from itertools import imap
 from flup.server.fcgi import WSGIServer
@@ -24,6 +21,7 @@ from rospkg.common import ResourceNotFound
 import threading 
 import time
 
+import ast
 
 uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
 roslaunch.configure_logging(uuid)
@@ -58,11 +56,30 @@ class Launcher:
         except RLException as e:
             pass
 
-        self.args = loader.root_context.resolve_dict.get('arg_doc', {}) 
+        # contains default values + documentation
+        self.args = {arg:[v[0],v[1]] for arg, v in loader.root_context.resolve_dict.get('arg_doc', {}).items()}
+        self.has_args = bool(self.args)
+        self.readytolaunch = self.checkargs()
+
+    def checkargs(self):
+        """Check whether all the arguments are defined
+        """
+        for k,v in self.args.items():
+            if v[1] == None:
+                return False
+        return True
+
+    def setarg(self, arg, value):
+
+        rospy.loginfo("Setting arg <%s> to <%s> for %s" % (arg, str(value), self.prettyname))
+        self.args[arg][1] = value
+
+        self.readytolaunch = self.checkargs()
+
 
     def start(self):
 
-        if self.reachable:
+        if self.reachable and self.readytolaunch:
             self.launcher.start()
 
 launchers = []
@@ -74,59 +91,71 @@ for root, dirs, files in os.walk(rp.get_path(package)):
 
 
 env = Environment(loader=PackageLoader('freeplay_sandbox_supervisor', 'tpl'))
-tpl = env.get_template('supervisor.tpl')
+supervisor_tpl = env.get_template('supervisor.tpl')
+launcher_tpl = env.get_template('launcher.tpl')
 
 def fixencoding(s):
     return s.encode("utf-8")
 
+def getlauncher(name):
+    launcher = None
+    for l in launchers:
+        if l.name == name:
+            launcher = l
+            break
+    return launcher
+
 def process_launch(options):
     launchfile = options["launch"][0]
 
-    launcher = None
-    for l in launchers:
-        if l.name == launchfile:
-            launcher = l
-            break
+    launcher = getlauncher(launchfile)
     if launcher is None:
-        logger.warning("Attempting to launch inexistant %s" % launchfile)
+        rospy.logwarn("Attempting to launch inexistant %s" % launchfile)
         return False
 
-    logger.info("Attempting to launch %s" % launcher.launchfile)
+    rospy.loginfo("Attempting to launch %s" % launcher.launchfile)
 
     launcher.start()
 
 def records(path, options):
 
-    if "launch" in options:
-        return process_launch(options)
+    if "action" in options:
+        if "start" in options["action"]:
+            return process_launch(options)
+        elif "setarg" in options["action"]:
+            launcher = getlauncher(options["launch"][0])
+            launcher.setarg(options["arg"][0],
+                            options.get("value", [None])[0])
+            return launcher_tpl.generate(launcher=launcher, showargs=True)
 
 
 
     pingable, unpingable = rosnode.rosnode_ping_all()
-    return tpl.generate(path=path,
-                        launchers=launchers,
-                        nodes_ok=pingable, 
-                        nodes_ko=unpingable)
+    return supervisor_tpl.generate(path=path,
+                          launchers=launchers,
+                          nodes_ok=pingable, 
+                          nodes_ko=unpingable)
 
 def app(environ, start_response):
 
-    logger.info("Incoming request!")
+    rospy.loginfo("Incoming request!")
     start_response('200 OK', [('Content-Type', 'text/html')])
 
     path = environ["PATH_INFO"].decode("utf-8")
 
     options = urlparse.parse_qs(environ["QUERY_STRING"])
+    rospy.loginfo("Options passed:\n%s" % str(options))
 
 
     return imap(fixencoding, records(path,options))
 
 if __name__ == '__main__': 
-    logger.info("Starting to serve...")
+    rospy.loginfo("Starting to serve...")
 
     WSGIServer(app, bindAddress = ("127.0.0.1", 8080)).run()
 
     for launcher in launchers:
         launcher.shutdown()
 
-    logger.info("Bye bye.")
+    rospy.loginfo("Bye bye.")
 

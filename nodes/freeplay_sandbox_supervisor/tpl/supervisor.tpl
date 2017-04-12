@@ -64,44 +64,18 @@
     <div class="page-header">
         <h1>Launchers</h1>
     </div>
-    <table class="table table-striped">
+    <table class="table table-striped table-hover">
     <thead>
         <tr>
-        <th>Status</th>
-        <th>Launch file</th>
+        <th style="width: 50px">Status</th>
+        <th style="width: 200px">Launch file</th>
+        <th style="width: 50px"></th>
+        <th></th>
         </tr>
     </thead>
     <tbody>
         {% for launcher in launchers %}
-        <tr>
-            <td>{% if launcher.reachable %}<a class="btn btn-sm btn-primary" href="#"  onclick="$('#{{launcher.name}}_args').toggle();"><i class="fa fa-chevron-circle-down"></i></a>
-
-                {% else %}<span class="label label-warning"><i class="fa fa-question"></i></span>
-                {% endif %}
-            </td>
-            <td><strong>{{ "%s" % launcher.prettyname}}</strong></td>
-            <td>{% if launcher.reachable %}
-                <div id="{{launcher.name}}_args" style="display:none">
-                <table>
-                <tr><td>
-                    <table class="table table-condensed">
-                    <tbody>
-                        {% for arg, values in launcher.args.items() %}
-                        <tr>
-                            <td>{{ arg }} {% if values[0] %}<em>({{ values[0] }}) </em>{% endif %} <input class="form-control" value="{{ values[1] }}" /> </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                    </table>
-</td><td>
-                    <a class="btn btn-lg btn-success" href="#" onclick="launch('{{launcher.name}}',[1,2,3])"><i class="fa fa-play"></i></a>
-                    </td></tr>
-                    </table>
-                </div>
-                {% else %}{{launcher.desc}}</span>
-                {% endif %}
-            </td>
-        </tr>
+        {% include 'launcher.tpl' %}
         {% endfor %}
     </tbody>
     </table>
@@ -139,8 +113,19 @@
     </table>
 
 <script>
+function setarg(launchfile, arg, value) {
+    $.ajax({
+        url:'{{path}}?action=setarg&launch=' + launchfile + '&arg=' + arg + '&value=' + value,
+        dataType: "html",
+        context: this,
+        success: function(data) {
+                    $(this).parents("tr").replaceWith(data);
+                }
+        });
+}
+
 function launch(launchfile, args) {
-    $.get('{{path}}?launch=' + launchfile + '&args=' + args, function(data) {
+    $.get('{{path}}?action=start&launch=' + launchfile + '&args=' + args, function(data) {
             console.log(data);
             });
 }
