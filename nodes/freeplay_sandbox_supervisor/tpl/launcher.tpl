@@ -19,16 +19,29 @@
         <ul id="{{launcher.name}}_args" {% if not showargs %}style="display:none"{% endif %} class="list-group">
             {% for arg, values in launcher.args.items() %}
                 <li class="list-group-item">
-                    {{ arg }}
-                    {% if values[0] %}
-                    <em>({{ values[0] }}) </em>
-                    {% endif %}
+                    <form class="form-inline">
+                    {% if values[2] == 'bool' %}
                     <input class="form-control"
-                           {% if not values[1] %}style="background-color:#eb9316;"
-                           {% else %}
-                           value="{{ values[1] }}" 
-                           {% endif %}
+                           type='checkbox'
+                           {{'checked' if values[1]}}
+                           onchange="setarg.call($(this),'{{launcher.name}}','{{arg}}',this.checked)" />
+                    {% endif %}
+                    <strong>{{ arg }}</strong>
+                    {% if values[2] != 'bool' %}: 
+                    <input class="form-control"
+                            {% if values[2] in ['int', 'float'] %}
+                              type='number' value="{{ values[1] }}"
+                            {% elif not values[1] %}
+                              style="background-color:#eb9316;"
+                            {% else %}
+                              value="{{ values[1] }}" 
+                            {% endif %}
                            onchange="setarg.call($(this),'{{launcher.name}}','{{arg}}',this.value)" />
+                    {% endif %}
+                    {% if values[0] %}
+                    <br/><em>{{ values[0] }}</em>
+                    {% endif %}
+                    </form>
                 </li>
             {% endfor %}
         </ul>

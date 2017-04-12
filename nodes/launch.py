@@ -57,7 +57,24 @@ class Launcher:
             pass
 
         # contains default values + documentation
-        self.args = {arg:[v[0],v[1]] for arg, v in loader.root_context.resolve_dict.get('arg_doc', {}).items()}
+        self.args = {}
+        for arg, v in loader.root_context.resolve_dict.get('arg_doc', {}).items():
+            doc, value = v
+
+            ################
+            # manual type checking (!!) -- ast.literal_eval fails badly on strings like '/dev/video1'
+            if value:
+                try:
+                    value = int(value)
+                except ValueError:
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        if value.lower() == "false": value = False
+                        elif value.lower() == "true": value = True
+            ################
+            self.args[arg] = [doc, value, type(value).__name__]
+
         self.has_args = bool(self.args)
         self.readytolaunch = self.checkargs()
 
@@ -72,7 +89,13 @@ class Launcher:
     def setarg(self, arg, value):
 
         rospy.loginfo("Setting arg <%s> to <%s> for %s" % (arg, str(value), self.prettyname))
-        self.args[arg][1] = value
+        if self.args[arg][2] == "bool":
+            # special case for checkboxes: checked == 'on'; unchecked == 'off'
+            self.args[arg][1] = True if value.lower() == "true" else False
+        else:
+            self.args[arg][1] = value
+
+        rospy.loginfo(str(self.args[arg]))
 
         self.readytolaunch = self.checkargs()
 
@@ -144,7 +167,7 @@ def app(environ, start_response):
     path = environ["PATH_INFO"].decode("utf-8")
 
     options = urlparse.parse_qs(environ["QUERY_STRING"])
-    rospy.loginfo("Options passed:\n%s" % str(options))
+    #rospy.loginfo("Options passed:\n%s" % str(options))
 
 
     return imap(fixencoding, records(path,options))

@@ -61,9 +61,6 @@
         </div>
       </nav>
 
-    <div class="page-header">
-        <h1>Launchers</h1>
-    </div>
     <table class="table table-striped table-hover">
     <thead>
         <tr>
