@@ -121,15 +121,15 @@ class Launcher:
         for proc in psutil.process_iter():
             try:
                 pinfo = proc.as_dict(attrs=['pid', 'name','cmdline'])
-                if pinfo["name"] == "roslaunch":
+                if pinfo["name"] == "roslaunch" and len(pinfo["cmdline"]) > 3:
                     roslaunch_processes.append(pinfo)
             except psutil.NoSuchProcess:
                 pass
 
         for p in roslaunch_processes:
-            if     p["cmdline"][2] == self.package \
-               and p["cmdline"][3] == self.name + ".launch":
-                   self.pid = p["pid"]
+            if  p["cmdline"][2] == self.package \
+            and p["cmdline"][3] == self.name + ".launch":
+                self.pid = p["pid"]
 
         return True if self.pid is not None else False
 
