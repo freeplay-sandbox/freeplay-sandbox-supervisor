@@ -111,8 +111,9 @@ def record(path, options):
 
     rospy.loginfo("%s" % str(options))
     if "action" in options:
-        if "itemstostash" in options["action"]:
-            rospy.Publisher('signal_sandtray_items_to_stash', Empty, queue_size=1).publish(Empty())
+        if "createrecord" in options["action"]:
+            return "123456" 
+
         if "reshuffleitems" in options["action"]:
             rospy.loginfo("Reshuffling items")
             rospy.Publisher('signal_sandtray_shuffle_items', Empty, queue_size=1).publish(Empty())

@@ -1,7 +1,7 @@
-        <h3 class="center">New record</h3>
 
         <div class="container">
             <div class="section">
+            <h3>New record</h3>
 
                 <div class="center row">
                 <a id="childchildbtn" class="waves-effect waves-light btn" onclick="setcondition('childchild')">Child-child</a>
@@ -17,9 +17,9 @@
 
                                 <h2 class="center deep-purple-text"><i class="large material-icons">person_pin</i></h2>
                                 <p>
-                                <input name="purple-age" type="radio" id="purple-male" />
+                                <input name="purple-gender" type="radio" value="male" id="purple-male" />
                                 <label for="purple-male">Male</label>
-                                <input name="purple-age" type="radio" id="purple-female" />
+                                <input name="purple-gender" type="radio" value="female" id="purple-female" />
                                 <label for="purple-female">Female</label>
                                 </p>
 
@@ -29,13 +29,13 @@
                                 </p>
 
                                 <p>
-                                <input name="purple-tablet-familiarity" type="radio" id="purple-notknow" checked />
+                                <input name="purple-tablet-familiarity" type="radio" value="na" id="purple-notknow" checked />
                                 <label for="purple-notknown">Not known</label>
-                                <input name="purple-tablet-familiarity" type="radio" id="purple-notfamiliar" />
+                                <input name="purple-tablet-familiarity" type="radio" value="0" id="purple-notfamiliar" />
                                 <label for="purple-notfamiliar">Not familiar</label>
-                                <input name="purple-tablet-familiarity" type="radio" id="purple-somewhat-familiar" />
+                                <input name="purple-tablet-familiarity" type="radio" value="1" id="purple-somewhat-familiar" />
                                 <label for="purple-somewhat-familiar">Somewhat familiar</label>
-                                <input name="purple-tablet-familiarity" type="radio" id="purple-familiar" />
+                                <input name="purple-tablet-familiarity" type="radio" value="2" id="purple-familiar" />
                                 <label for="purple-familiar">Familiar</label>
                                 </p>
 
@@ -52,9 +52,9 @@
                                 <fieldset id="yellow-form">
                                 <h2 class="center amber-text"><i class="large material-icons">person_pin</i></h2>
                                 <p>
-                                <input name="yellow-age" type="radio" id="yellow-male" />
+                                <input name="yellow-gender" type="radio" value="male" id="yellow-male" />
                                 <label for="yellow-male">Male</label>
-                                <input name="yellow-age" type="radio" id="yellow-female" />
+                                <input name="yellow-gender" type="radio" value="female" id="yellow-female" />
                                 <label for="yellow-female">Female</label>
                                 </p>
 
@@ -64,13 +64,13 @@
                                 </p>
 
                                 <p>
-                                <input name="yellow-tablet-familiarity" type="radio" id="yellow-notknow" checked />
+                                <input name="yellow-tablet-familiarity" type="radio" value="na" id="yellow-notknow" checked />
                                 <label for="yellow-notknown">Not known</label>
-                                <input name="yellow-tablet-familiarity" type="radio" id="yellow-notfamiliar" />
+                                <input name="yellow-tablet-familiarity" type="radio" value="0" id="yellow-notfamiliar" />
                                 <label for="yellow-notfamiliar">Not familiar</label>
-                                <input name="yellow-tablet-familiarity" type="radio" id="yellow-somewhat-familiar" />
+                                <input name="yellow-tablet-familiarity" type="radio" value="1" id="yellow-somewhat-familiar" />
                                 <label for="yellow-somewhat-familiar">Somewhat familiar</label>
-                                <input name="yellow-tablet-familiarity" type="radio" id="yellow-familiar" />
+                                <input name="yellow-tablet-familiarity" type="radio" value="2" id="yellow-familiar" />
                                 <label for="yellow-familiar">Familiar</label>
                                 </p>
                                 </fieldset>
@@ -86,7 +86,7 @@
 
                 <div id="face-detection-check" class="center row" style="display:none;">
 
-                    <h5>Good! Let's run some checks</h5>
+                    <h5>Good! Record ID <span id="record-id"></span> created. Let's run some checks</h5>
                     <p>Sit the children so that the cameras can see them
                     </p>
                     <a id="face-check-btn" class="waves-effect waves-light btn" onclick="face_check_done()">No face detected yet</a>
@@ -100,45 +100,48 @@
 
 
             </div>
+
+            <div class="section">
+
+            <h3> Past records </h3>
+
+            <table class="table table-striped">
+            <thead>
+                <tr>
+                <th>#</th>
+                <th>Date</th>
+                <th>Condition</th>
+                <th>Age</th>
+                <th>Path</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ "%s" % loop.index}}</td>
+                    <td>{{ "%s" % record["date"]}}</td>
+                    <td>{{ "%s" % record["condition"]}}</td>
+                    <td>{{ "%s" % record["age"]}}</td>
+                    <td>{{ "%s" % record["path"]}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+
         </div>
-
-
-<h3> Past records </h3>
-
-<table class="table table-striped">
-<thead>
-    <tr>
-    <th>#</th>
-    <th>Date</th>
-    <th>Condition</th>
-    <th>Age</th>
-    <th>Path</th>
-    </tr>
-</thead>
-<tbody>
-    {% for record in records %}
-    <tr>
-        <td>{{ "%s" % loop.index}}</td>
-        <td>{{ "%s" % record["date"]}}</td>
-        <td>{{ "%s" % record["condition"]}}</td>
-        <td>{{ "%s" % record["age"]}}</td>
-        <td>{{ "%s" % record["path"]}}</td>
-    </tr>
-    {% endfor %}
-</tbody>
-</table>
-
+</div>
 <script>
 
+var condition = "";
 
-function perform(action) {
+function perform(action,parameters) {
     $.ajax({
-        url:'{{path}}?action=' + action,
+        url:'{{path}}?action=' + action + "&" + $.param(parameters),
         dataType: "json",
         context: this,
-        success: function(isrunning) {
-                    $(this).toggleClass('btn-primary', 'btn-secondary');
-                }
+        success: function(msg) {
+            console.log(msg);
+            }
 
         });
 }
@@ -147,6 +150,8 @@ function perform(action) {
 function setcondition(cdt) {
     //console.log(this); // points to the clicked input button
     //perform(this.id)
+
+    condition = cdt;
 
     $("#participant-next-btn").show();
     if (cdt === "childchild") {
@@ -165,7 +170,30 @@ function demographics_done() {
     $("#purple-form").prop("disabled","true");
     $("#yellow-form").prop("disabled","true");
     $("#participant-next-btn").hide();
-    $("#face-detection-check").show();
+
+
+    var experiment = {
+        "condition": condition,
+        "purple-gender": $('input[name=purple-gender]:checked').val(),
+        "purple-age": $("#purple-age").val(),
+        "purple-tablet-familiarity": $('input[name=purple-tablet-familiarity]:checked').val(),
+        "yellow-gender": $('input[name=yellow-gender]:checked').val(),
+        "yellow-age": $("#ywllow-age").val(),
+        "yellow-tablet-familiarity": $('input[name=yellow-tablet-familiarity]:checked').val(),
+        }
+
+
+    $.ajax({
+        url:'{{path}}?action=createrecord&' + $.param(experiment),
+        dataType: "json",
+        context: this,
+        success: function(recordid) {
+            $("#record-id").html(recordid);
+            $("#face-detection-check").show();
+            }
+
+        });
+
 
 }
 
