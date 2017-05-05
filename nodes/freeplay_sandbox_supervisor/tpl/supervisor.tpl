@@ -28,7 +28,7 @@
     <![endif]-->
   </head>
 
-      <nav class="navbar navbar-inverse navbar-fixed-top">
+      <nav class="navbar navbar-inverse sticky-top">
         <div class="container">
           <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
@@ -41,9 +41,9 @@
           </div>
           <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-              <li class="active"><a href="#">Status</a></li>
-              <li><a href="#about">Recordings</a></li>
-              <li><a href="#contact">Manage</a></li>
+              <li class="{{ 'active' if page == 'status' }}"><a href="/">Status</a></li>
+              <li class="{{ 'active' if page == 'recordings' }}"><a href="/recordings">Recordings</a></li>
+              <li class="{{ 'active' if page == 'manage' }}"><a href="/manage">Manage</a></li>
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Not used yet<span class="caret"></span></a>
                 <ul class="dropdown-menu">
@@ -61,108 +61,12 @@
         </div>
       </nav>
 
-    <table class="table table-striped table-hover">
-    <thead>
-        <tr>
-        <th style="width: 50px">Status</th>
-        <th style="width: 200px">Launch file</th>
-        <th style="width: 50px"></th>
-        <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for launcher in launchers %}
-        {% include 'launcher.tpl' %}
-        {% endfor %}
-    </tbody>
-    </table>
+    {% if page == "status" %}
+        {% include 'status.tpl' %}
+    {% elif page == "manage" %}
+        {% include 'manage.tpl' %}
+    {% endif %}
 
-    <div class="page-header">
-        <h1>Nodes</h1>
-    </div>
-    <table class="table table-striped">
-    <thead>
-        <tr>
-        <th>Status</th>
-        <th>ROS node</th>
-        <th>not used</th>
-        <th>not used</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for node in nodes_ok %}
-        <tr>
-            <td><span class="label label-success">Ok</span></td>
-            <td>{{ "%s" % node}}</td>
-            <td></td>
-            <td></td>
-        </tr>
-        {% endfor %}
-        {% for node in nodes_ko %}
-        <tr>
-            <td><span class="label label-warning">Not responsive</span></td>
-            <td>{{ "%s" % node}}</td>
-            <td></td>
-            <td></td>
-        </tr>
-        {% endfor %}
-    </tbody>
-    </table>
-
-<script>
-function setarg(launchfile, arg, value) {
-    $.ajax({
-        url:'{{path}}?action=setarg&launch=' + launchfile + '&arg=' + arg + '&value=' + value,
-        dataType: "html",
-        context: this,
-        success: function(data) {
-                    $(this).parents("tr").replaceWith(data);
-                }
-        });
-}
-
-function togglerunning(btn, isrunning) {
-                    $(btn).toggleClass('btn-danger', isrunning);
-                    $(btn).children().toggleClass('fa-stop', isrunning);
-
-                    if(isrunning) {
-                        $(btn).prop("value", "stop");
-                    }
-                    else {
-                        $(btn).prop("value", "start");
-                    }
-
-}
-
-function launch(launchfile, action) {
-    $.ajax({
-        url:'{{path}}?action=' + action + '&launch=' + launchfile,
-        dataType: "json",
-        context: this,
-        success: function(isrunning) {
-                    togglerunning(this, isrunning);
-                }
-
-        });
-}
-
-function updaterunningstate() {
-    $.ajax({
-        url:'{{path}}?action=updatestate',
-        dataType: "json",
-        context: this,
-        success: function(runningstates) {
-                for (var l in runningstates) {
-                    togglerunning($("#"+l+"_startstop")[0], runningstates[l]);
-                    }
-
-                }
-        });
-}
-
-var intervalID = window.setInterval(updaterunningstate, 1000);
-
-</script>
 </body>
 </html>
 

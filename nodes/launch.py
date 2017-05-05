@@ -9,6 +9,7 @@ from jinja2 import Environment, PackageLoader
 
 import os
 import rospy
+from std_msgs.msg import Empty
 import rosnode
 
 from rospkg import RosPack
@@ -66,7 +67,7 @@ def process_launch(options):
 
     return "true" if launcher.isrunning() else "false"
 
-def records(path, options):
+def status(path, options):
 
     if "action" in options:
         if "start" in options["action"]:
@@ -84,10 +85,27 @@ def records(path, options):
 
 
     pingable, unpingable = rosnode.rosnode_ping_all()
-    return supervisor_tpl.generate(path=path,
-                          launchers=launchers,
-                          nodes_ok=pingable, 
-                          nodes_ko=unpingable)
+    return supervisor_tpl.generate(page="status",
+                                   path=path,
+                                   launchers=launchers,
+                                   nodes_ok=pingable, 
+                                   nodes_ko=unpingable)
+
+def manage(path, options):
+
+    if "action" in options:
+        if "itemstostash" in options["action"]:
+            rospy.loginfo("Sending items back to stash")
+            rospy.Publisher('signal_sandtray_items_to_stash', Empty, queue_size=1).publish(Empty())
+        if "reshuffleitems" in options["action"]:
+            rospy.loginfo("Reshuffling items")
+            rospy.Publisher('signal_sandtray_shuffle_items', Empty, queue_size=1).publish(Empty())
+        if "clearbackground" in options["action"]:
+            rospy.loginfo("Clearing background")
+            rospy.Publisher('signal_sandtray_clear_drawing', Empty, queue_size=1).publish(Empty())
+
+    return supervisor_tpl.generate(page="manage",
+                                   path=path)
 
 def app(environ, start_response):
 
@@ -99,13 +117,19 @@ def app(environ, start_response):
     options = urlparse.parse_qs(environ["QUERY_STRING"])
     #rospy.loginfo("Options passed:\n%s" % str(options))
 
-
-    return imap(fixencoding, records(path,options))
+    if path.endswith("manage"):
+        return imap(fixencoding, manage(path,options))
+    else:
+        return imap(fixencoding, status(path,options))
 
 if __name__ == '__main__': 
-    rospy.loginfo("Starting to serve...")
 
-    WSGIServer(app, bindAddress = ("127.0.0.1", 8080)).run()
+    IP="127.0.0.1"
+    PORT=8080
+
+    rospy.loginfo("Starting to serve... You can point your browser to http://%s:%d" % (IP, PORT))
+
+    WSGIServer(app, bindAddress = (IP, PORT)).run()
 
     for launcher in launchers:
         launcher.shutdown()
