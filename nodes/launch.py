@@ -107,6 +107,23 @@ def manage(path, options):
     return supervisor_tpl.generate(page="manage",
                                    path=path)
 
+def record(path, options):
+
+    rospy.loginfo("%s" % str(options))
+    if "action" in options:
+        if "itemstostash" in options["action"]:
+            rospy.Publisher('signal_sandtray_items_to_stash', Empty, queue_size=1).publish(Empty())
+        if "reshuffleitems" in options["action"]:
+            rospy.loginfo("Reshuffling items")
+            rospy.Publisher('signal_sandtray_shuffle_items', Empty, queue_size=1).publish(Empty())
+        if "clearbackground" in options["action"]:
+            rospy.loginfo("Clearing background")
+            rospy.Publisher('signal_sandtray_clear_drawing', Empty, queue_size=1).publish(Empty())
+
+    return supervisor_tpl.generate(page="records",
+                                   path=path,
+                                   records=[])
+
 def app(environ, start_response):
 
     rospy.loginfo("Incoming request!")
@@ -119,8 +136,10 @@ def app(environ, start_response):
 
     if path.endswith("manage"):
         return imap(fixencoding, manage(path,options))
-    else:
+    elif path.endswith("status"):
         return imap(fixencoding, status(path,options))
+    else: # root path: /
+        return imap(fixencoding, record(path,options))
 
 if __name__ == '__main__': 
 

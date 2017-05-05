@@ -61,7 +61,7 @@ function setarg(launchfile, arg, value) {
 }
 
 function togglerunning(btn, isrunning) {
-                    $(btn).toggleClass('btn-danger', isrunning);
+                    $(btn).toggleClass('red', isrunning);
                     $(btn).children().toggleClass('fa-stop', isrunning);
 
                     if(isrunning) {
