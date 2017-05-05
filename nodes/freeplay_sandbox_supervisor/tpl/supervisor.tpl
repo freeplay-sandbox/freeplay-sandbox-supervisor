@@ -30,10 +30,10 @@
             <nav>
                 <div class="nav-wrapper">
                     <a href="#!" class="brand-logo">Freeplay Sandbox</a>
-                    <ul class="right hide-on-med-and-down">
-                        <li class="{{ 'active' if page == 'records' }}"><a href="/">Records</a></li>
-                        <li class="{{ 'active' if page == 'status' }}"><a href="/status">Status</a></li>
-                        <li class="{{ 'active' if page == 'manage' }}"><a href="/manage">Manage</a></li>
+                    <ul class="right">
+                        <li class="{{ 'active' if page == 'records' }}"><a href="/"><i class="material-icons left">assignment_ind</i> Records</a></li>
+                        <li class="{{ 'active' if page == 'status' }}"><a href="/status"><i class="material-icons left">search</i> Status</a></li>
+                        <li class="{{ 'active' if page == 'manage' }}"><a href="/manage"><i class="material-icons left">mode_edit</i> Manage</a></li>
                     </ul>
                 </div>
             </nav>

@@ -2,8 +2,8 @@
     <table class="table table-striped table-hover">
     <thead>
         <tr>
-        <th style="width: 50px">Status</th>
-        <th style="width: 400px">Launch file</th>
+        <th style="width: 50px"></th>
+        <th style="width: 400px"></th>
         <th style="width: 50px"></th>
         <th></th>
         </tr>
@@ -61,7 +61,8 @@ function setarg(launchfile, arg, value) {
 }
 
 function togglerunning(btn, isrunning) {
-                    $(btn).toggleClass('red', isrunning);
+                    $(btn).toggleClass('green',!isrunning);
+                    $(btn).toggleClass('red',isrunning);
                     $(btn).children().toggleClass('fa-stop', isrunning);
 
                     if(isrunning) {
