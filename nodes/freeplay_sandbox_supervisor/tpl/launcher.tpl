@@ -16,35 +16,34 @@
     </td>
     <td>
         {% if launcher.has_args %}
-        <ul id="{{launcher.name}}_args" {% if not showargs %}style="display:none"{% endif %} class="list-group">
+        <div id="{{launcher.name}}_args" {% if not showargs %}style="display:none"{% endif %} >
             {% for arg, values in launcher.args.items() %}
-                <li class="list-group-item">
-                    <form class="form-inline">
+                <div class="row">
+                    <div class="input-field">
+                    <input id="{{arg}}_input" 
+                    {% if values[0] %}
+                        placeholder="{{ values[0] }}"
+                    {% endif %}
+
                     {% if values[2] == 'bool' %}
-                    <input class="form-control"
                            type='checkbox'
                            {{'checked' if values[1]}}
                            onchange="setarg.call($(this),'{{launcher.name}}','{{arg}}',this.checked)" />
-                    {% endif %}
-                    <strong>{{ arg }}</strong>
-                    {% if values[2] != 'bool' %}: 
-                    <input class="form-control"
+                    {% else %}
                             {% if values[2] in ['int', 'float'] %}
                               type='number' value="{{ values[1] }}"
                             {% elif not values[1] %}
                               style="background-color:#eb9316;"
                             {% else %}
-                              value="{{ values[1] }}" 
+                              type="text" value="{{ values[1] }}" 
                             {% endif %}
                            onchange="setarg.call($(this),'{{launcher.name}}','{{arg}}',this.value)" />
                     {% endif %}
-                    {% if values[0] %}
-                    <br/><em>{{ values[0] }}</em>
-                    {% endif %}
-                    </form>
-                </li>
+                    <label for="{{arg}}_input">{{ arg }}</label>
+                    </div>
+                </div>
             {% endfor %}
-        </ul>
+        </div>
         {% else %}{{launcher.desc}}</span>
         {% endif %}
     </td>
