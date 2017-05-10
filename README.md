@@ -2,7 +2,7 @@ Free-play Sandbox -- Web interface for experiment control
 =========================================================
 
 *This is one of the sister repository to  [the
-ROS](https://github.com/severin-lemaignan/freeplay-sandbox-ros) [the
+ROS](https://github.com/severin-lemaignan/freeplay-sandbox-ros) and [the
 QtQuick-based GUI](https://github.com/severin-lemaignan/freeplay-sandbox-qt) of
 the 'Free-play Sandbox' experimental framework for Cognitive Human-Robot
 Interaction research.*
