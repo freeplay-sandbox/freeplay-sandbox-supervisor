@@ -22,7 +22,7 @@ import json
 
 rospy.init_node('freeplay_sandbox_supervisor')
 
-from launcher import Launcher
+from freeplay_sandbox_supervisor.launcher import Launcher
 
 package = "freeplay_sandbox"
 
@@ -103,6 +103,9 @@ def manage(path, options):
         if "clearbackground" in options["action"]:
             rospy.loginfo("Clearing background")
             rospy.Publisher('signal_sandtray_clear_drawing', Empty, queue_size=1).publish(Empty())
+        if "localisation" in options["action"]:
+            rospy.loginfo("Triggering robot localisation")
+            rospy.Publisher('signal_sandtray_robot_localising', Empty, queue_size=1).publish(Empty())
 
     return supervisor_tpl.generate(page="manage",
                                    path=path)
@@ -147,7 +150,7 @@ if __name__ == '__main__':
     IP="127.0.0.1"
     PORT=8080
 
-    rospy.loginfo("Starting to serve... You can point your browser to http://%s:%d" % (IP, PORT))
+    rospy.loginfo("Starting the CGI server on %s:%d (you still need a webserver, though!)" % (IP, PORT))
 
     WSGIServer(app, bindAddress = (IP, PORT)).run()
 
