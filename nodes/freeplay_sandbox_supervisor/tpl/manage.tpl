@@ -12,6 +12,9 @@
             <p>
                 <button class="waves-effect waves-light btn-large" id="clearing_bg" alt="Clearing background" onclick="perform('clearbackground')"><i class="fa fa-eraser"></i> Clear any drawings</button>
             </p>
+            <p>
+                <button class="waves-effect waves-light btn-large" id="localisation" alt="Trigger robot localisation" onclick="perform('localisation')"><i class="fa fa-compass"></i> Trigger robot localisation</button>
+            </p>
 
         </div>
     </div>
