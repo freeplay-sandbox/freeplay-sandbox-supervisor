@@ -53,7 +53,11 @@ class Launcher:
                         if value.lower() == "false": value = False
                         elif value.lower() == "true": value = True
             ################
-            self.args[arg] = [doc, value, type(value).__name__]
+            self.args[arg] = {"doc":doc,
+                              "value": value, 
+                              "type": type(value).__name__, 
+                              "default_value": True
+                             }
 
         self.has_args = bool(self.args)
         self.readytolaunch = self.checkargs()
@@ -68,25 +72,27 @@ class Launcher:
         """Check whether all the arguments are defined
         """
         for k,v in self.args.items():
-            if v[1] == None:
+            if v["value"] == None:
                 return False
         return True
 
     def setarg(self, arg, value):
 
         rospy.loginfo("Setting arg <%s> to <%s> for %s" % (arg, str(value), self.prettyname))
-        if self.args[arg][2] == "bool":
+        if self.args[arg]["type"] == "bool":
             # special case for checkboxes: checked == 'on'; unchecked == 'off'
-            self.args[arg][1] = True if value.lower() == "true" else False
+            self.args[arg]["value"] = True if value.lower() == "true" else False
         else:
-            self.args[arg][1] = value
+            self.args[arg]["value"] = value
+
+        self.args[arg]["default_value"] = False # manually modified value!
 
         rospy.loginfo(str(self.args[arg]))
 
         self.readytolaunch = self.checkargs()
 
     def make_rl_cmd(self):
-        argcmd = [a + ":=" + str(v[1]) for a,v in self.args.items()]
+        argcmd = [a + ":=" + str(v["value"]) for a,v in self.args.items() if not v["default_value"]]
         return ["roslaunch", self.package, self.name + ".launch"] + argcmd
 
 

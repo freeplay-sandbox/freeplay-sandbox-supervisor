@@ -21,21 +21,21 @@
                 <div class="row">
                     <div class="input-field">
                     <input id="{{arg}}_input" 
-                    {% if values[0] %}
-                        placeholder="{{ values[0] }}"
+                    {% if values['doc'] %}
+                        placeholder="{{ values['doc'] }}"
                     {% endif %}
 
-                    {% if values[2] == 'bool' %}
+                    {% if values['type'] == 'bool' %}
                            type='checkbox'
-                           {{'checked' if values[1]}}
+                           {{'checked' if values['value']}}
                            onchange="setarg.call($(this),'{{launcher.name}}','{{arg}}',this.checked)" />
                     {% else %}
-                            {% if values[2] in ['int', 'float'] %}
-                              type='number' value="{{ values[1] }}"
-                            {% elif not values[1] %}
+                            {% if values['type'] in ['int', 'float'] %}
+                              type='number' value="{{ values['value'] }}"
+                            {% elif not values['value'] %}
                               style="background-color:#eb9316;"
                             {% else %}
-                              type="text" value="{{ values[1] }}" 
+                              type="text" value="{{ values['value'] }}" 
                             {% endif %}
                            onchange="setarg.call($(this),'{{launcher.name}}','{{arg}}',this.value)" />
                     {% endif %}
