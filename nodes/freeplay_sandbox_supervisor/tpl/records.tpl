@@ -178,6 +178,7 @@ function setcondition(cdt) {
 
     perform("start_sandbox");
     perform("start_cameras");
+    perform("start_attention_tracking");
 
     condition = cdt;
 

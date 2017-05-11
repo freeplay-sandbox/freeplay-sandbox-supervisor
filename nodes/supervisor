@@ -140,6 +140,11 @@ def record(path, options):
             launcher = getlauncher("dual_sr300")
             launcher.start()
 
+        elif "start_attention_tracking" in options["action"]:
+            launcher = getlauncher("dual_attention_tracking")
+            launcher.start()
+
+
         elif "createrecord" in options["action"]:
             return "123456" 
 
@@ -175,8 +180,8 @@ if __name__ == '__main__':
     IP="127.0.0.1"
     PORT=8080
 
-    purpleface_subscriber = rospy.Subscriber("/camera_purple/nb_faces_detected", Char, onpurplefacedetected) 
-    yellowface_subscriber = rospy.Subscriber("/camera_yellow/nb_faces_detected", Char, onyellowfacedetected) 
+    purpleface_subscriber = rospy.Subscriber("/camera_purple/nb_detected_faces", Char, onpurplefacedetected) 
+    yellowface_subscriber = rospy.Subscriber("/camera_yellow/nb_detected_faces", Char, onyellowfacedetected) 
 
     rospy.loginfo("Starting the CGI server on %s:%d (you still need a webserver, though!)" % (IP, PORT))
 
