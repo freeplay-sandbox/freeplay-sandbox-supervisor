@@ -51,6 +51,9 @@
                                 <label for="purple-familiar">Familiar</label>
                                 </p>
 
+                                <p>
+                                <div id="nb_purple_faces_chip" class="chip"><i class="material-icons">person_pin</i><span id="nb_purple_faces">0</span></div>
+                                </p>
                                 </fieldset>
 
                             </form>
@@ -84,6 +87,10 @@
                                 <label for="yellow-somewhat-familiar">Somewhat familiar</label>
                                 <input name="yellow-tablet-familiarity" type="radio" value="2" id="yellow-familiar" />
                                 <label for="yellow-familiar">Familiar</label>
+                                </p>
+
+                                <p>
+                                <div id="nb_yellow_faces_chip" class="chip"><i class="material-icons">person_pin</i><span id="nb_yellow_faces">0</span></div>
                                 </p>
                                 </fieldset>
 
@@ -246,6 +253,26 @@ function updaterunningstate() {
 }
 
 var intervalID = window.setInterval(updaterunningstate, 1000);
+
+function updatedetectedfaces() {
+    $.ajax({
+        url:'{{path}}?action=getdetectedfaces',
+        dataType: "json",
+        context: this,
+        success: function(faces) {
+               $("#nb_purple_faces").html(faces["purple"]);
+               $("#nb_purple_faces_chip").toggleClass('green-text',faces["purple"] == 1);
+               $("#nb_purple_faces_chip").toggleClass('red-text',faces["purple"] != 1);
+
+               $("#nb_yellow_faces").html(faces["yellow"]);
+               $("#nb_yellow_faces_chip").toggleClass('green-text',faces["yellow"] == 1);
+               $("#nb_yellow_faces_chip").toggleClass('red-text',faces["yellow"] != 1);
+            }
+        });
+}
+
+var intervalID = window.setInterval(updatedetectedfaces, 1000);
+
 
 
 </script>

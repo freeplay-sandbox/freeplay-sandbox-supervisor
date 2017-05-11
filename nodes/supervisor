@@ -10,6 +10,7 @@ from jinja2 import Environment, PackageLoader
 import os
 import rospy
 from std_msgs.msg import Empty
+from std_msgs.msg import Char
 import rosnode
 
 from rospkg import RosPack
@@ -32,6 +33,9 @@ rp = RosPack()
 
 launchers = []
 
+nb_purple_faces = 0
+nb_yellow_faces = 0
+
 for root, dirs, files in os.walk(rp.get_path(package)):
     for file in files:
         if file.endswith(".launch"):
@@ -41,6 +45,14 @@ for root, dirs, files in os.walk(rp.get_path(package)):
 env = Environment(loader=PackageLoader('freeplay_sandbox_supervisor', 'tpl'))
 supervisor_tpl = env.get_template('supervisor.tpl')
 launcher_tpl = env.get_template('launcher.tpl')
+
+def onpurplefacedetected(msg):
+    global nb_purple_faces
+    nb_purple_faces = msg.data
+
+def onyellowfacedetected(msg):
+    global nb_yellow_faces
+    nb_yellow_faces = msg.data
 
 def fixencoding(s):
     return s.encode("utf-8")
@@ -134,6 +146,9 @@ def record(path, options):
         elif "updatestate" in options["action"]:
             return json.dumps({l.name: l.isrunning() for l in launchers})
 
+        elif "getdetectedfaces" in options["action"]:
+            return json.dumps({"yellow": nb_yellow_faces, "purple": nb_purple_faces})
+
     return supervisor_tpl.generate(page="records",
                                    path=path,
                                    freespace=getfreespace(),
@@ -159,6 +174,9 @@ if __name__ == '__main__':
 
     IP="127.0.0.1"
     PORT=8080
+
+    purpleface_subscriber = rospy.Subscriber("/camera_purple/nb_faces_detected", Char, onpurplefacedetected) 
+    yellowface_subscriber = rospy.Subscriber("/camera_yellow/nb_faces_detected", Char, onyellowfacedetected) 
 
     rospy.loginfo("Starting the CGI server on %s:%d (you still need a webserver, though!)" % (IP, PORT))
 
