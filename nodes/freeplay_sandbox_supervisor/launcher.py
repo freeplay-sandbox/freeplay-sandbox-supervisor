@@ -116,7 +116,12 @@ class Launcher:
         if self.pid:
             try:
                 proc = psutil.Process(self.pid)
-                return True
+                if proc.status() != psutil.STATUS_ZOMBIE:
+                    return True
+                else:
+                    # cleanup zombie processes
+                    self.shutdown(force=True)
+
             except psutil.NoSuchProcess:
                 self.pid = None
 
@@ -136,14 +141,14 @@ class Launcher:
 
         return True if self.pid is not None else False
 
-    def shutdown(self):
+    def shutdown(self, force=False):
         """Properly terminate the roslaunch process, starting with all the children, and
         then the main process.
         Kill them if necessary.
 
         TODO: how does that work with nodes marked as 'respawn'?
         """
-        if self.isrunning():
+        if force or self.isrunning():
             psutil.Process(self.pid).terminate()
 
             proc = psutil.Process(self.pid)
