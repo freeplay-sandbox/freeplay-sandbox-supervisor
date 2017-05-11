@@ -130,13 +130,12 @@ def record(path, options):
 
 def app(environ, start_response):
 
-    rospy.loginfo("Incoming request!")
     start_response('200 OK', [('Content-Type', 'text/html')])
 
     path = environ["PATH_INFO"].decode("utf-8")
 
     options = urlparse.parse_qs(environ["QUERY_STRING"])
-    #rospy.loginfo("Options passed:\n%s" % str(options))
+    rospy.logdebug("Incoming request. Path: %s; options passed:\n%s" % (path, str(options)))
 
     if path.endswith("manage"):
         return imap(fixencoding, manage(path,options))

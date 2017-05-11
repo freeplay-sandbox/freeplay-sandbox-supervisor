@@ -90,7 +90,7 @@ class Launcher:
         return ["roslaunch", self.package, self.name + ".launch"] + argcmd
 
 
-    def start(self):
+    def start(self, stdout=sys.stdout, stderr=sys.stderr):
 
         if self.isrunning():
             rospy.logwarn("Launch file <%s> is already running. PID: %d" % (self.name, self.pid))
@@ -98,8 +98,11 @@ class Launcher:
 
         if self.reachable and self.readytolaunch:
             cmd = self.make_rl_cmd()
-            rospy.loginfo("Starting: " + " ".join(cmd))
-            self.pid = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr).pid
+            rospy.loginfo("****************************")
+            rospy.loginfo("Executing:")
+            rospy.loginfo(" ".join(cmd))
+            rospy.loginfo("****************************")
+            self.pid = subprocess.Popen(cmd, stdout=stdout, stderr=stderr).pid
 
     def isrunning(self):
         """Returns true if this launch file is running, False otherwise
