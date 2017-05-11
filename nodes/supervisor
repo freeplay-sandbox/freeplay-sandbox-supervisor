@@ -19,6 +19,7 @@ import time
 
 import json
 
+import subprocess
 
 rospy.init_node('freeplay_sandbox_supervisor')
 
@@ -43,6 +44,12 @@ launcher_tpl = env.get_template('launcher.tpl')
 
 def fixencoding(s):
     return s.encode("utf-8")
+
+def getfreespace(path="/"):
+    df = subprocess.Popen(["df", "-h", path], stdout=subprocess.PIPE)
+    output = df.communicate()[0]
+    device, size, used, available, percent, mountpoint = output.split("\n")[1].split()
+    return "available space: %s/%s (%s%%)" % (available, size, 100-int(percent[:-1]))
 
 def getlauncher(name):
     launcher = None
@@ -112,20 +119,24 @@ def manage(path, options):
 
 def record(path, options):
 
-    rospy.loginfo("%s" % str(options))
     if "action" in options:
-        if "createrecord" in options["action"]:
+        if "start_sandbox" in options["action"]:
+            launcher = getlauncher("interactive_playground")
+            launcher.start()
+
+        elif "start_cameras" in options["action"]:
+            launcher = getlauncher("dual_sr300")
+            launcher.start()
+
+        elif "createrecord" in options["action"]:
             return "123456" 
 
-        if "reshuffleitems" in options["action"]:
-            rospy.loginfo("Reshuffling items")
-            rospy.Publisher('signal_sandtray_shuffle_items', Empty, queue_size=1).publish(Empty())
-        if "clearbackground" in options["action"]:
-            rospy.loginfo("Clearing background")
-            rospy.Publisher('signal_sandtray_clear_drawing', Empty, queue_size=1).publish(Empty())
+        elif "updatestate" in options["action"]:
+            return json.dumps({l.name: l.isrunning() for l in launchers})
 
     return supervisor_tpl.generate(page="records",
                                    path=path,
+                                   freespace=getfreespace(),
                                    records=[])
 
 def app(environ, start_response):

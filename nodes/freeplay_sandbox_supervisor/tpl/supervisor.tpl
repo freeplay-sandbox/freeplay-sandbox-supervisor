@@ -29,7 +29,6 @@
         <div class="navbar-fixed">
             <nav>
                 <div class="nav-wrapper">
-                    <a href="#!" class="brand-logo">Freeplay Sandbox</a>
                     <ul class="right">
                         <li class="{{ 'active' if page == 'records' }}"><a href="/"><i class="material-icons left">assignment_ind</i> Records</a></li>
                         <li class="{{ 'active' if page == 'status' }}"><a href="/status"><i class="material-icons left">search</i> Status</a></li>

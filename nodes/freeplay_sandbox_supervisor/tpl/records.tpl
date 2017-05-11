@@ -1,7 +1,19 @@
 
         <div class="container">
             <div class="section">
-            <h3>New record</h3>
+              <div id="interactive_playground_chip" class="chip">
+                  <i class="material-icons">surround_sound</i>
+                  sandbox
+              </div>
+              <div id="dual_sr300_chip" class="chip">
+                  <i class="material-icons">videocam</i>
+                  cameras
+              </div>
+            </div>
+
+            <div class="section">
+            <h3>New record</h3> {{ freespace }}
+                
 
                 <div class="center row">
                 <a id="childchildbtn" class="waves-effect waves-light btn" onclick="setcondition('childchild')">Child-child</a>
@@ -134,9 +146,15 @@
 
 var condition = "";
 
-function perform(action,parameters) {
+function perform(action, parameters) {
+
+    var url = '{{path}}?action=' + action;
+
+    // if parameters provided, turn them into a query string
+    url = (typeof parameters !== 'undefined') ?  url + "&" + $.param(parameters) : url;
+
     $.ajax({
-        url:'{{path}}?action=' + action + "&" + $.param(parameters),
+        url: url,
         dataType: "json",
         context: this,
         success: function(msg) {
@@ -150,6 +168,9 @@ function perform(action,parameters) {
 function setcondition(cdt) {
     //console.log(this); // points to the clicked input button
     //perform(this.id)
+
+    perform("start_sandbox");
+    perform("start_cameras");
 
     condition = cdt;
 
@@ -202,5 +223,30 @@ function face_check_done() {
     $("#face-detection-check").hide();
     $("#visual-tracking").show();
 }
+
+
+function updaterunningstate() {
+    $.ajax({
+        url:'{{path}}?action=updatestate',
+        dataType: "json",
+        context: this,
+        success: function(runningstates) {
+                for (var l in runningstates) {
+                    if($("#"+l+"_chip").length) {
+                        if(runningstates[l]) {
+                            $("#"+l+"_chip").css("background-color", "#c4eab0");
+                        }
+                        else {
+                            $("#"+l+"_chip").css("background-color", "#eac2b0");
+                        }
+                    }
+                }
+            }
+        });
+}
+
+var intervalID = window.setInterval(updaterunningstate, 1000);
+
+
 </script>
 
