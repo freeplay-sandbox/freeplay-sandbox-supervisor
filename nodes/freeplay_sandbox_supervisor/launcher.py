@@ -156,12 +156,12 @@ class Launcher:
 
             for p in children:
                 p.terminate()
-            gone, still_alive = psutil.wait_procs(children, timeout=5)
+            gone, still_alive = psutil.wait_procs(children, timeout=15)
             for p in still_alive:
                 p.kill()
 
             proc.terminate()
-            gone, still_alive = psutil.wait_procs([proc], timeout=5)
+            gone, still_alive = psutil.wait_procs([proc], timeout=15)
             for p in still_alive:
                 p.kill()
 
