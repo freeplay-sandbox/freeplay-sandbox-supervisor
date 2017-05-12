@@ -2,12 +2,16 @@
         <div class="container">
             <div class="section">
               <div id="interactive_playground_chip" class="chip">
-                  <i class="material-icons">surround_sound</i>
-                  sandbox
+                  <i class="material-icons" style="vertical-align:middle">surround_sound</i>
+                  interactive_playground
               </div>
               <div id="dual_sr300_chip" class="chip">
-                  <i class="material-icons">videocam</i>
-                  cameras
+                  <i class="material-icons" style="vertical-align:middle">videocam</i>
+                  dual_sr300
+              </div>
+              <div id="dual_attention_tracking_chip" class="chip">
+                  <i class="material-icons" style="vertical-align:middle">visibility</i>
+                  dual_attention_tracking
               </div>
             </div>
 
@@ -51,8 +55,8 @@
                                 <label for="purple-familiar">Familiar</label>
                                 </p>
 
-                                <p>
-                                <div id="nb_purple_faces_chip" class="chip"><i class="material-icons">person_pin</i><span id="nb_purple_faces">0</span></div>
+                                <p class="center">
+                                <div id="nb_purple_faces_chip" class="chip"><i class="material-icons" style="vertical-align:middle">supervisor_account</i><span id="nb_purple_faces">0</span></div>
                                 </p>
                                 </fieldset>
 
@@ -89,8 +93,8 @@
                                 <label for="yellow-familiar">Familiar</label>
                                 </p>
 
-                                <p>
-                                <div id="nb_yellow_faces_chip" class="chip"><i class="material-icons">person_pin</i><span id="nb_yellow_faces">0</span></div>
+                                <p class="center">
+                                <div id="nb_yellow_faces_chip" class="chip"><i class="material-icons" style="vertical-align:middle">supervisor_account</i><span id="nb_yellow_faces">0</span></div>
                                 </p>
                                 </fieldset>
 
@@ -100,7 +104,7 @@
                 </div>
 
                 <div id="participant-next-btn" class="center row" style="display:none;">
-                    <a class="waves-effect waves-light btn" onclick="demographics_done()">Next</a>
+                    <a id="participant-next-btn-link" class="waves-effect waves-light btn disabled" onclick="demographics_done()">Waiting for faces to be detected</a>
                 </div>
 
                 <div id="face-detection-check" class="center row" style="display:none;">
@@ -182,7 +186,6 @@ function setcondition(cdt) {
 
     condition = cdt;
 
-    $("#participant-next-btn").show();
     if (cdt === "childchild") {
         $("#childrobotbtn").addClass("disabled");
         $("#purple-participant").show();
@@ -192,6 +195,9 @@ function setcondition(cdt) {
         $("#childchildbtn").addClass("disabled");
         $("#purple-participant").show();
     }
+
+    $("#participant-next-btn").show();
+    startUpdateFaces();
 }
 
 function demographics_done() {
@@ -255,25 +261,48 @@ function updaterunningstate() {
 
 var intervalID = window.setInterval(updaterunningstate, 1000);
 
+var faceDetectorInterval;
+
+function startUpdateFaces() {
+    faceDetectorInterval = setInterval(updatedetectedfaces, 1000);
+}
+
+function stopUpdateFaces() {
+    clearInterval(faceDetectorInterval);
+}
+
 function updatedetectedfaces() {
     $.ajax({
         url:'{{path}}?action=getdetectedfaces',
         dataType: "json",
         context: this,
         success: function(faces) {
-               $("#nb_purple_faces").html(faces["purple"]);
+               $("#nb_purple_faces").html(faces["purple"] + " faces detected");
                $("#nb_purple_faces_chip").toggleClass('green-text',faces["purple"] == 1);
                $("#nb_purple_faces_chip").toggleClass('red-text',faces["purple"] != 1);
 
-               $("#nb_yellow_faces").html(faces["yellow"]);
+               $("#nb_yellow_faces").html(faces["yellow"] + " faces detected");
                $("#nb_yellow_faces_chip").toggleClass('green-text',faces["yellow"] == 1);
                $("#nb_yellow_faces_chip").toggleClass('red-text',faces["yellow"] != 1);
+
+
+               if (condition === "childchild") {
+                if (faces["yellow"] == 1 && faces["purple"] == 1) {
+                        stopUpdateFaces();
+                        $("#participant-next-btn-link").removeClass('disabled');
+                        $("#participant-next-btn-link").html('Save demographics');
+                }
+                }
+               else { // cdt: child-robot
+                if (faces["purple"] == 1) {
+                        stopUpdateFaces();
+                        $("#participant-next-btn-link").removeClass('disabled');
+                        $("#participant-next-btn-link").html('Save demographics');
+                }
+               }
             }
         });
 }
-
-var intervalID = window.setInterval(updatedetectedfaces, 1000);
-
 
 
 </script>
