@@ -24,6 +24,8 @@ import subprocess
 
 rospy.init_node('freeplay_sandbox_supervisor')
 
+visual_tracking_publisher = rospy.Publisher('sandtray/signals/start_visual_tracking_calibration', Empty, queue_size=1)
+
 from freeplay_sandbox_supervisor.launcher import Launcher
 from freeplay_sandbox_supervisor.experiment import Experiment
 
@@ -36,6 +38,7 @@ launchers = []
 
 nb_purple_faces = 0
 nb_yellow_faces = 0
+visual_tracking_ended = False
 
 for root, dirs, files in os.walk(rp.get_path(package)):
     for file in files:
@@ -54,6 +57,10 @@ def onpurplefacedetected(msg):
 def onyellowfacedetected(msg):
     global nb_yellow_faces
     nb_yellow_faces = msg.data
+
+def onvisualtrackingended(msg):
+    global visual_tracking_ended
+    visual_tracking_ended = True
 
 def fixencoding(s):
     return s.encode("utf-8")
@@ -158,6 +165,14 @@ def record(path, options):
         elif "getdetectedfaces" in options["action"]:
             return json.dumps({"yellow": nb_yellow_faces, "purple": nb_purple_faces})
 
+        elif "start_visual_tracking" in options["action"]:
+            rospy.loginfo("Starting the visual tracking task")
+            visual_tracking_publisher.publish(Empty())
+            while not visual_tracking_ended:
+                time.sleep(0.5)
+            rospy.loginfo("Visual tracking task finished")
+            return 'true'
+
         else: 
             rospy.logwarn("record: received unknown action %s" % str(options["action"]))
 
@@ -189,6 +204,7 @@ if __name__ == '__main__':
 
     purpleface_subscriber = rospy.Subscriber("/camera_purple/nb_detected_faces", Char, onpurplefacedetected) 
     yellowface_subscriber = rospy.Subscriber("/camera_yellow/nb_detected_faces", Char, onyellowfacedetected) 
+    visual_tracking_ended_subscriber = rospy.Subscriber("sandtray/signals/visual_tracking_calibration_ended", Empty, onvisualtrackingended) 
 
     rospy.loginfo("Starting the CGI server on %s:%d (you still need a webserver, though!)" % (IP, PORT))
 

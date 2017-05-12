@@ -57,8 +57,7 @@
 
                                 </fieldset>
 
-                                <br/>
-                                <div class="center">
+                                <div class="center" style="margin-top:15px">
                                 <div id="nb_purple_faces_chip" class="chip"><i class="material-icons" style="vertical-align:middle">supervisor_account</i><span id="nb_purple_faces">no detection yet</span></div>
                                 </div>
 
@@ -97,8 +96,7 @@
 
                                 </fieldset>
 
-                                <br/>
-                                <div class="center">
+                                <div class="center" style="margin-top:15px">
                                 <div id="nb_yellow_faces_chip" class="chip"><i class="material-icons" style="vertical-align:middle">supervisor_account</i><span id="nb_yellow_faces">no detection yet</span></div>
                                 </div>
 
@@ -113,11 +111,30 @@
 
                 <div id="visual-tracking" class="center row" style="display:none;">
 
+                    <p>
                     Good! Record ID <span id="record-id"></span> created.
+                    </p>
 
-                    <a class="waves-effect waves-light btn" onclick="start_visual_tracking()">Start visual tracking task</a>
+                    <a id="visual-tracking-btn" class="waves-effect waves-light btn" onclick="start_visual_tracking()">Start visual tracking task</a>
+
+                    <p>
+                    <div id="visual-tracking-spinner" class="preloader-wrapper active" style="display:none;">
+                        <div class="spinner-layer spinner-red-only">
+                        <div class="circle-clipper left">
+                            <div class="circle"></div>
+                        </div><div class="gap-patch">
+                            <div class="circle"></div>
+                        </div><div class="circle-clipper right">
+                            <div class="circle"></div>
+                        </div>
+                        </div>
+                    </div>
+                    </p>
                 </div>
 
+                <div id="tutorial" class="center row" style="display:none;">
+                    <a id="tutorial-btn" class="waves-effect waves-light btn" onclick="start_visual_tracking()">Tutorial</a>
+                </div>
 
             </div>
 
@@ -223,17 +240,8 @@ function demographics_done() {
             $("#record-id").html(recordid);
             $("#visual-tracking").show();
             }
-
         });
-
-
 }
-
-function start_visual_tracking() {
-    console.log("Starting visual tracking");
-    perform("start_visual_tracking");
-}
-
 
 function updaterunningstate() {
     $.ajax({
@@ -299,6 +307,25 @@ function updatedetectedfaces() {
                         $("#participant-next-btn-link").html('Save demographics');
                 }
                }
+            }
+        });
+}
+
+
+function start_visual_tracking() {
+    console.log("Starting visual tracking");
+    $("#visual-tracking-btn").addClass('disabled');
+    $("#visual-tracking-btn").html('Running...');
+    $("#visual-tracking-spinner").show();
+
+    $.ajax({
+        url:'{{path}}?action=start_visual_tracking',
+        dataType: "json",
+        context: this,
+        success: function(done) {
+            $("#visual-tracking-btn").html('Visual tracking: completed');
+            $("#visual-tracking-spinner").hide();
+            $("#tutorial").show();
             }
         });
 }
