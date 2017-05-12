@@ -55,10 +55,12 @@
                                 <label for="purple-familiar">Familiar</label>
                                 </p>
 
-                                <p class="center">
-                                <div id="nb_purple_faces_chip" class="chip"><i class="material-icons" style="vertical-align:middle">supervisor_account</i><span id="nb_purple_faces">0</span></div>
-                                </p>
                                 </fieldset>
+
+                                <br/>
+                                <div class="center">
+                                <div id="nb_purple_faces_chip" class="chip"><i class="material-icons" style="vertical-align:middle">supervisor_account</i><span id="nb_purple_faces">no detection yet</span></div>
+                                </div>
 
                             </form>
                         </div>
@@ -93,10 +95,12 @@
                                 <label for="yellow-familiar">Familiar</label>
                                 </p>
 
-                                <p class="center">
-                                <div id="nb_yellow_faces_chip" class="chip"><i class="material-icons" style="vertical-align:middle">supervisor_account</i><span id="nb_yellow_faces">0</span></div>
-                                </p>
                                 </fieldset>
+
+                                <br/>
+                                <div class="center">
+                                <div id="nb_yellow_faces_chip" class="chip"><i class="material-icons" style="vertical-align:middle">supervisor_account</i><span id="nb_yellow_faces">no detection yet</span></div>
+                                </div>
 
                             </form>
                         </div>
@@ -107,17 +111,10 @@
                     <a id="participant-next-btn-link" class="waves-effect waves-light btn disabled" onclick="demographics_done()">Waiting for faces to be detected</a>
                 </div>
 
-                <div id="face-detection-check" class="center row" style="display:none;">
-
-                    <h5>Good! Record ID <span id="record-id"></span> created. Let's run some checks</h5>
-                    <p>Sit the children so that the cameras can see them
-                    </p>
-                    <a id="face-check-btn" class="waves-effect waves-light btn" onclick="face_check_done()">No face detected yet</a>
-                </div>
-
                 <div id="visual-tracking" class="center row" style="display:none;">
 
-                    <h5>Let's start! First, visual tracking</h5>
+                    Good! Record ID <span id="record-id"></span> created.
+
                     <a class="waves-effect waves-light btn" onclick="start_visual_tracking()">Start visual tracking task</a>
                 </div>
 
@@ -213,7 +210,7 @@ function demographics_done() {
         "purple-age": $("#purple-age").val(),
         "purple-tablet-familiarity": $('input[name=purple-tablet-familiarity]:checked').val(),
         "yellow-gender": $('input[name=yellow-gender]:checked').val(),
-        "yellow-age": $("#ywllow-age").val(),
+        "yellow-age": $("#yellow-age").val(),
         "yellow-tablet-familiarity": $('input[name=yellow-tablet-familiarity]:checked').val(),
         }
 
@@ -224,7 +221,7 @@ function demographics_done() {
         context: this,
         success: function(recordid) {
             $("#record-id").html(recordid);
-            $("#face-detection-check").show();
+            $("#visual-tracking").show();
             }
 
         });
@@ -232,10 +229,9 @@ function demographics_done() {
 
 }
 
-function face_check_done() {
-
-    $("#face-detection-check").hide();
-    $("#visual-tracking").show();
+function start_visual_tracking() {
+    console.log("Starting visual tracking");
+    perform("start_visual_tracking");
 }
 
 
@@ -277,25 +273,28 @@ function updatedetectedfaces() {
         dataType: "json",
         context: this,
         success: function(faces) {
-               $("#nb_purple_faces").html(faces["purple"] + " faces detected");
+               $("#nb_purple_faces").html(faces["purple"] + " face(s) detected");
                $("#nb_purple_faces_chip").toggleClass('green-text',faces["purple"] == 1);
                $("#nb_purple_faces_chip").toggleClass('red-text',faces["purple"] != 1);
 
-               $("#nb_yellow_faces").html(faces["yellow"] + " faces detected");
+               $("#nb_yellow_faces").html(faces["yellow"] + " face(s) detected");
                $("#nb_yellow_faces_chip").toggleClass('green-text',faces["yellow"] == 1);
                $("#nb_yellow_faces_chip").toggleClass('red-text',faces["yellow"] != 1);
 
 
                if (condition === "childchild") {
                 if (faces["yellow"] == 1 && faces["purple"] == 1) {
-                        stopUpdateFaces();
+                        //stopUpdateFaces();
+                        //$("#nb_yellow_faces_chip").hide();
+                        //$("#nb_purple_faces_chip").hide();
                         $("#participant-next-btn-link").removeClass('disabled');
                         $("#participant-next-btn-link").html('Save demographics');
                 }
                 }
                else { // cdt: child-robot
                 if (faces["purple"] == 1) {
-                        stopUpdateFaces();
+                        //stopUpdateFaces();
+                        //$("#nb_purple_faces_chip").hide();
                         $("#participant-next-btn-link").removeClass('disabled');
                         $("#participant-next-btn-link").html('Save demographics');
                 }

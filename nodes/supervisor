@@ -25,6 +25,7 @@ import subprocess
 rospy.init_node('freeplay_sandbox_supervisor')
 
 from freeplay_sandbox_supervisor.launcher import Launcher
+from freeplay_sandbox_supervisor.experiment import Experiment
 
 package = "freeplay_sandbox"
 
@@ -146,13 +147,19 @@ def record(path, options):
 
 
         elif "createrecord" in options["action"]:
-            return "123456" 
+            rospy.loginfo("Creating new experiment with given demographics")
+            expe = Experiment(options)
+            rospy.loginfo("Experiment %s created" % expe)
+            return json.dumps(repr(expe))
 
         elif "updatestate" in options["action"]:
             return json.dumps({l.name: l.isrunning() for l in launchers})
 
         elif "getdetectedfaces" in options["action"]:
             return json.dumps({"yellow": nb_yellow_faces, "purple": nb_purple_faces})
+
+        else: 
+            rospy.logwarn("record: received unknown action %s" % str(options["action"]))
 
     return supervisor_tpl.generate(page="records",
                                    path=path,
