@@ -7,6 +7,7 @@ from flup.server.fcgi import WSGIServer
 import urlparse
 from jinja2 import Environment, PackageLoader
 
+import threading
 import os
 import rospy
 from std_msgs.msg import Empty
@@ -35,15 +36,17 @@ rp = RosPack()
 
 
 launchers = []
+records = {}
 
 nb_purple_faces = 0
 nb_yellow_faces = 0
-visual_tracking_ended = False
+cv_visual_tracking_ended = threading.Condition()
 
 for root, dirs, files in os.walk(rp.get_path(package)):
     for file in files:
         if file.endswith(".launch"):
-             launchers.append(Launcher(package, os.path.join(root, file)))
+            rospy.loginfo("Loading launchfile %s" % file)
+            launchers.append(Launcher(package, os.path.join(root, file)))
 
 
 env = Environment(loader=PackageLoader('freeplay_sandbox_supervisor', 'tpl'))
@@ -60,7 +63,10 @@ def onyellowfacedetected(msg):
 
 def onvisualtrackingended(msg):
     global visual_tracking_ended
-    visual_tracking_ended = True
+
+    cv_visual_tracking_ended.acquire()
+    cv_visual_tracking_ended.notify()
+    cv_visual_tracking_ended.release()
 
 def fixencoding(s):
     return s.encode("utf-8")
@@ -139,6 +145,10 @@ def manage(path, options):
 
 def record(path, options):
 
+    expe = None
+    if "recordid" in options:
+        expe = records[options["recordid"][0]]
+
     if "action" in options:
         if "start_sandbox" in options["action"]:
             launcher = getlauncher("interactive_playground")
@@ -156,6 +166,7 @@ def record(path, options):
         elif "createrecord" in options["action"]:
             rospy.loginfo("Creating new experiment with given demographics")
             expe = Experiment(options)
+            records[repr(expe)] = expe
             rospy.loginfo("Experiment %s created" % expe)
             return json.dumps(repr(expe))
 
@@ -165,11 +176,23 @@ def record(path, options):
         elif "getdetectedfaces" in options["action"]:
             return json.dumps({"yellow": nb_yellow_faces, "purple": nb_purple_faces})
 
+
         elif "start_visual_tracking" in options["action"]:
             rospy.loginfo("Starting the visual tracking task")
+
+            launcher = getlauncher("record_visual_tracking")
+            launcher.setarg("output_file", os.path.join(expe.path, "visual_tracking.bag"))
+            launcher.setarg("duration", "45") # seconds
+            launcher.start()
+
             visual_tracking_publisher.publish(Empty())
-            while not visual_tracking_ended:
-                time.sleep(0.5)
+
+            cv_visual_tracking_ended.acquire()
+            cv_visual_tracking_ended.wait()
+            cv_visual_tracking_ended.release()
+
+
+            launcher.shutdown()
             rospy.loginfo("Visual tracking task finished")
             return 'true'
 
@@ -204,7 +227,7 @@ if __name__ == '__main__':
 
     purpleface_subscriber = rospy.Subscriber("/camera_purple/nb_detected_faces", Char, onpurplefacedetected) 
     yellowface_subscriber = rospy.Subscriber("/camera_yellow/nb_detected_faces", Char, onyellowfacedetected) 
-    visual_tracking_ended_subscriber = rospy.Subscriber("sandtray/signals/visual_tracking_calibration_ended", Empty, onvisualtrackingended) 
+    visual_tracking_ended_subscriber = rospy.Subscriber("/sandtray/signals/visual_tracking_calibration_ended", Empty, onvisualtrackingended) 
 
     rospy.loginfo("Starting the CGI server on %s:%d (you still need a webserver, though!)" % (IP, PORT))
 

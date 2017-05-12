@@ -32,6 +32,7 @@
                                 <fieldset id="purple-form">
 
                                 <h2 class="center deep-purple-text"><i class="large material-icons">person_pin</i></h2>
+                                <h5>General</h5>
                                 <p>
                                 <input name="purple-gender" type="radio" value="male" id="purple-male" />
                                 <label for="purple-male">Male</label>
@@ -44,6 +45,7 @@
                                 <input type="range" id="purple-age" min="3" max="8" />
                                 </p>
 
+                                <h5>Tablet familiarity</h5>
                                 <p>
                                 <input name="purple-tablet-familiarity" type="radio" value="na" id="purple-notknow" checked />
                                 <label for="purple-notknown">Not known</label>
@@ -71,6 +73,7 @@
                             <form action="#">
                                 <fieldset id="yellow-form">
                                 <h2 class="center amber-text"><i class="large material-icons">person_pin</i></h2>
+                                <h5>General</h5>
                                 <p>
                                 <input name="yellow-gender" type="radio" value="male" id="yellow-male" />
                                 <label for="yellow-male">Male</label>
@@ -83,6 +86,7 @@
                                 <input type="range" id="yellow-age" min="3" max="8" />
                                 </p>
 
+                                <h5>Tablet familiarity</h5>
                                 <p>
                                 <input name="yellow-tablet-familiarity" type="radio" value="na" id="yellow-notknow" checked />
                                 <label for="yellow-notknown">Not known</label>
@@ -112,7 +116,14 @@
                 <div id="visual-tracking" class="center row" style="display:none;">
 
                     <p>
-                    Good! Record ID <span id="record-id"></span> created.
+                    Record ID <span id="record-id"></span> created.
+                    </p>
+
+                    <p>
+                    <div id="record_visual_tracking_chip" class="center chip">
+                        <i class="material-icons" style="vertical-align:middle">voicemail</i>
+                        record_visual_tracking
+                    </div>
                     </p>
 
                     <a id="visual-tracking-btn" class="waves-effect waves-light btn" onclick="start_visual_tracking()">Start visual tracking task</a>
@@ -170,6 +181,7 @@
 <script>
 
 var condition = "";
+var current_recordid = "";
 
 function perform(action, parameters) {
 
@@ -237,6 +249,7 @@ function demographics_done() {
         dataType: "json",
         context: this,
         success: function(recordid) {
+            current_recordid = recordid;
             $("#record-id").html(recordid);
             $("#visual-tracking").show();
             }
@@ -314,12 +327,13 @@ function updatedetectedfaces() {
 
 function start_visual_tracking() {
     console.log("Starting visual tracking");
+    
     $("#visual-tracking-btn").addClass('disabled');
     $("#visual-tracking-btn").html('Running...');
     $("#visual-tracking-spinner").show();
 
     $.ajax({
-        url:'{{path}}?action=start_visual_tracking',
+        url:'{{path}}?action=start_visual_tracking&recordid=' + current_recordid,
         dataType: "json",
         context: this,
         success: function(done) {
