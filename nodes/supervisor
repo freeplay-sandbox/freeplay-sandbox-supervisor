@@ -26,6 +26,8 @@ import subprocess
 rospy.init_node('freeplay_sandbox_supervisor')
 
 visual_tracking_publisher = rospy.Publisher('sandtray/signals/start_visual_tracking_calibration', Empty, queue_size=1)
+tutorial_publisher = rospy.Publisher('sandtray/signals/start_tutorial', Empty, queue_size=1)
+freeplay_publisher = rospy.Publisher('sandtray/signals/start_freeplay', Empty, queue_size=1)
 
 from freeplay_sandbox_supervisor.launcher import Launcher
 from freeplay_sandbox_supervisor.experiment import Experiment
@@ -196,6 +198,12 @@ def record(path, options):
             rospy.loginfo("Visual tracking task finished")
             return 'true'
 
+        elif "start_tutorial" in options["action"]:
+            rospy.loginfo("Starting tutorial task")
+            tutorial_publisher.publish(Empty())
+        elif "start_freeplay" in options["action"]:
+            rospy.loginfo("Starting freeplay task")
+            freeplay_publisher.publish(Empty())
         else: 
             rospy.logwarn("record: received unknown action %s" % str(options["action"]))
 

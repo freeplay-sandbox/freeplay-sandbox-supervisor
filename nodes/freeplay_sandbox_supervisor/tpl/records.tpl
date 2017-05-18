@@ -143,8 +143,8 @@
                     </p>
                 </div>
 
-                <div id="tutorial" class="center row" style="display:none;">
-                    <a id="tutorial-btn" class="waves-effect waves-light btn" onclick="start_visual_tracking()">Tutorial</a>
+                <div id="freeplay" class="center row" style="display:none;">
+                    <a id="freeplay-btn" class="waves-effect waves-light btn" onclick="start_freeplay()">Start freeplay task</a>
                 </div>
 
             </div>
@@ -339,7 +339,7 @@ function start_visual_tracking() {
         success: function(done) {
             $("#visual-tracking-btn").html('Visual tracking: completed');
             $("#visual-tracking-spinner").hide();
-            $("#tutorial").show();
+            $("#freeplay").show();
             }
         });
 }
