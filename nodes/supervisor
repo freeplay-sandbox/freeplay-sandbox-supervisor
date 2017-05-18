@@ -195,15 +195,41 @@ def record(path, options):
 
 
             launcher.shutdown()
+
+            launcher = getlauncher("dual_sr300")
+            launcher.shutdown()
+
             rospy.loginfo("Visual tracking task finished")
             return 'true'
 
         elif "start_tutorial" in options["action"]:
             rospy.loginfo("Starting tutorial task")
             tutorial_publisher.publish(Empty())
+            return 'true'
+
         elif "start_freeplay" in options["action"]:
             rospy.loginfo("Starting freeplay task")
+
+            prepare_launcher = getlauncher("prepare_recording")
+            prepare_launcher.start()
+            record_launcher = getlauncher("record")
+            record_launcher.setarg("output_file", os.path.join(expe.path, "freeplay.bag"))
+            record_launcher.setarg("duration", "20m")
+            record_launcher.start()
+            time.sleep(2)
+
             freeplay_publisher.publish(Empty())
+            return 'true'
+        elif "stop_freeplay" in options["action"]:
+            rospy.loginfo("Stopping freeplay task")
+
+            record_launcher = getlauncher("record")
+            record_launcher.shutdown()
+            prepare_launcher = getlauncher("prepare_recording")
+            prepare_launcher.shutdown()
+
+            return 'true'
+
         else: 
             rospy.logwarn("record: received unknown action %s" % str(options["action"]))
 

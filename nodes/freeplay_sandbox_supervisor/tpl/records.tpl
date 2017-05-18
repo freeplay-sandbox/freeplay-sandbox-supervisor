@@ -13,6 +13,10 @@
                   <i class="material-icons" style="vertical-align:middle">visibility</i>
                   dual_attention_tracking
               </div>
+              <div id="prepare_recording_chip" class="chip">
+                  <i class="material-icons" style="vertical-align:middle">videocam</i>
+                  prepare_recording
+              </div>
             </div>
 
             <div class="section">
@@ -144,7 +148,14 @@
                 </div>
 
                 <div id="freeplay" class="center row" style="display:none;">
+                    <p>
+                    <div id="record_chip" class="center chip">
+                        <i class="material-icons" style="vertical-align:middle">voicemail</i>
+                        record
+                    </div>
+                    </p>
                     <a id="freeplay-btn" class="waves-effect waves-light btn" onclick="start_freeplay()">Start freeplay task</a>
+                    <a id="stop-freeplay-btn" style="display:none" class="waves-effect waves-light btn" onclick="stop_freeplay()">Stop</a>
                 </div>
 
             </div>
@@ -340,6 +351,39 @@ function start_visual_tracking() {
             $("#visual-tracking-btn").html('Visual tracking: completed');
             $("#visual-tracking-spinner").hide();
             $("#freeplay").show();
+            }
+        });
+}
+
+function start_freeplay() {
+    console.log("Starting freeplay");
+    
+    $("#freeplay-btn").addClass('disabled');
+    $("#freeplay-btn").html('Starting...');
+
+    $.ajax({
+        url:'{{path}}?action=start_freeplay&recordid=' + current_recordid,
+        dataType: "json",
+        context: this,
+        success: function(done) {
+            $("#freeplay-btn").html('Freeplay: started');
+            $("#stop-freeplay-btn").show();
+            }
+        });
+}
+
+function stop_freeplay() {
+    console.log("Starting freeplay");
+    
+    $("#stop-freeplay-btn").addClass('disabled');
+    $("#stop-freeplay-btn").html('Stopping...');
+
+    $.ajax({
+        url:'{{path}}?action=stop_freeplay',
+        dataType: "json",
+        context: this,
+        success: function(done) {
+            $("#stop-freeplay-btn").html('End of the study!');
             }
         });
 }
