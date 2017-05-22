@@ -25,7 +25,8 @@ import subprocess
 
 rospy.init_node('freeplay_sandbox_supervisor')
 
-visual_tracking_publisher = rospy.Publisher('sandtray/signals/start_visual_tracking_calibration', Empty, queue_size=1)
+blankscreen_publisher = rospy.Publisher('sandtray/signals/blank_interface', Empty, queue_size=1)
+visual_tracking_publisher = rospy.Publisher('sandtray/signals/start_visual_tracking', Empty, queue_size=1)
 tutorial_publisher = rospy.Publisher('sandtray/signals/start_tutorial', Empty, queue_size=1)
 freeplay_publisher = rospy.Publisher('sandtray/signals/start_freeplay', Empty, queue_size=1)
 
@@ -131,16 +132,29 @@ def manage(path, options):
     if "action" in options:
         if "itemstostash" in options["action"]:
             rospy.loginfo("Sending items back to stash")
-            rospy.Publisher('signal_sandtray_items_to_stash', Empty, queue_size=1).publish(Empty())
+            rospy.Publisher('sandtray/signals/items_to_stash', Empty, queue_size=1).publish(Empty())
         if "reshuffleitems" in options["action"]:
             rospy.loginfo("Reshuffling items")
-            rospy.Publisher('signal_sandtray_shuffle_items', Empty, queue_size=1).publish(Empty())
+            rospy.Publisher('sandtray/signals/shuffle_items', Empty, queue_size=1).publish(Empty())
         if "clearbackground" in options["action"]:
             rospy.loginfo("Clearing background")
-            rospy.Publisher('signal_sandtray_clear_drawing', Empty, queue_size=1).publish(Empty())
+            rospy.Publisher('sandtray/signals/clear_drawing', Empty, queue_size=1).publish(Empty())
         if "localisation" in options["action"]:
             rospy.loginfo("Triggering robot localisation")
-            rospy.Publisher('signal_sandtray_robot_localising', Empty, queue_size=1).publish(Empty())
+            rospy.Publisher('sandtray/signals/robot_localising', Empty, queue_size=1).publish(Empty())
+
+        if "blank" in options["action"]:
+            rospy.loginfo("Blanking user interface")
+            blankscreen_publisher.publish(Empty())
+        if "tutorial" in options["action"]:
+            rospy.loginfo("Switching to tutorial mode")
+            tutorial_publisher.publish(Empty())
+        if "freeplay" in options["action"]:
+            rospy.loginfo("Switching to freeplay mode")
+            freeplay_publisher.publish(Empty())
+        if "visualtracking" in options["action"]:
+            rospy.loginfo("Switching to visual tracking mode")
+            visual_tracking_publisher.publish(Empty())
 
     return supervisor_tpl.generate(page="manage",
                                    path=path)
@@ -220,8 +234,11 @@ def record(path, options):
 
             freeplay_publisher.publish(Empty())
             return 'true'
+
         elif "stop_freeplay" in options["action"]:
             rospy.loginfo("Stopping freeplay task")
+
+            blankscreen_publisher.publish(Empty())
 
             record_launcher = getlauncher("record")
             record_launcher.shutdown()
