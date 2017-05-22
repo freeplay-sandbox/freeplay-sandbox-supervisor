@@ -9,6 +9,7 @@ from jinja2 import Environment, PackageLoader
 
 import threading
 import os
+import traceback
 import rospy
 from std_msgs.msg import Empty
 from std_msgs.msg import Char
@@ -16,7 +17,6 @@ import rosnode
 
 from rospkg import RosPack
 
-import threading 
 import time
 
 import json
@@ -161,94 +161,107 @@ def manage(path, options):
 
 def record(path, options):
 
-    expe = None
-    if "recordid" in options:
-        expe = records[options["recordid"][0]]
+    try:
+        expe = None
+        if "recordid" in options:
+            expe = records[options["recordid"][0]]
 
-    if "action" in options:
-        if "start_sandbox" in options["action"]:
-            launcher = getlauncher("interactive_playground")
-            launcher.start()
+        if "action" in options:
+            if "start_sandbox" in options["action"]:
+                launcher = getlauncher("interactive_playground")
+                launcher.start()
 
-        elif "start_cameras" in options["action"]:
-            launcher = getlauncher("dual_sr300")
-            launcher.start()
+            elif "start_cameras" in options["action"]:
+                launcher = getlauncher("dual_sr300")
+                launcher.start()
 
-        elif "start_attention_tracking" in options["action"]:
-            launcher = getlauncher("dual_attention_tracking")
-            launcher.start()
-
-
-        elif "createrecord" in options["action"]:
-            rospy.loginfo("Creating new experiment with given demographics")
-            expe = Experiment(options)
-            records[repr(expe)] = expe
-            rospy.loginfo("Experiment %s created" % expe)
-            return json.dumps(repr(expe))
-
-        elif "updatestate" in options["action"]:
-            return json.dumps({l.name: l.isrunning() for l in launchers})
-
-        elif "getdetectedfaces" in options["action"]:
-            return json.dumps({"yellow": nb_yellow_faces, "purple": nb_purple_faces})
+            elif "start_attention_tracking" in options["action"]:
+                launcher = getlauncher("dual_attention_tracking")
+                launcher.start()
 
 
-        elif "start_visual_tracking" in options["action"]:
-            rospy.loginfo("Starting the visual tracking task")
+            elif "createrecord" in options["action"]:
+                rospy.loginfo("Creating new experiment with given demographics")
+                expe = Experiment(options)
+                records[repr(expe)] = expe
+                rospy.loginfo("Experiment %s created" % expe)
+                return json.dumps(repr(expe))
 
-            launcher = getlauncher("record_visual_tracking")
-            launcher.setarg("output_file", os.path.join(expe.path, "visual_tracking.bag"))
-            launcher.setarg("duration", "45") # seconds
-            launcher.start()
+            elif "updatestate" in options["action"]:
+                return json.dumps({l.name: l.isrunning() for l in launchers})
 
-            visual_tracking_publisher.publish(Empty())
-
-            cv_visual_tracking_ended.acquire()
-            cv_visual_tracking_ended.wait()
-            cv_visual_tracking_ended.release()
+            elif "getdetectedfaces" in options["action"]:
+                return json.dumps({"yellow": nb_yellow_faces, "purple": nb_purple_faces})
 
 
-            launcher.shutdown()
+            elif "start_visual_tracking" in options["action"]:
+                rospy.loginfo("Starting the visual tracking task")
 
-            launcher = getlauncher("dual_sr300")
-            launcher.shutdown()
+                launcher = getlauncher("record_visual_tracking")
+                launcher.setarg("output_file", os.path.join(expe.path, "visual_tracking.bag"))
+                launcher.setarg("duration", "45") # seconds
+                launcher.start()
 
-            rospy.loginfo("Visual tracking task finished")
-            return 'true'
+                visual_tracking_publisher.publish(Empty())
 
-        elif "start_tutorial" in options["action"]:
-            rospy.loginfo("Starting tutorial task")
-            tutorial_publisher.publish(Empty())
-            return 'true'
+                cv_visual_tracking_ended.acquire()
+                cv_visual_tracking_ended.wait()
+                cv_visual_tracking_ended.release()
 
-        elif "start_freeplay" in options["action"]:
-            rospy.loginfo("Starting freeplay task")
 
-            prepare_launcher = getlauncher("prepare_recording")
-            prepare_launcher.start()
-            record_launcher = getlauncher("record")
-            record_launcher.setarg("output_file", os.path.join(expe.path, "freeplay.bag"))
-            record_launcher.setarg("duration", "20m")
-            record_launcher.start()
-            time.sleep(2)
+                launcher.shutdown()
 
-            freeplay_publisher.publish(Empty())
-            return 'true'
+                launcher = getlauncher("dual_sr300")
+                launcher.shutdown()
 
-        elif "stop_freeplay" in options["action"]:
-            rospy.loginfo("Stopping freeplay task")
+                rospy.loginfo("Visual tracking task finished")
+                return 'true'
 
-            blankscreen_publisher.publish(Empty())
+            elif "start_tutorial" in options["action"]:
+                rospy.loginfo("Starting tutorial task")
+                tutorial_publisher.publish(Empty())
+                return 'true'
 
-            record_launcher = getlauncher("record")
-            record_launcher.shutdown()
-            prepare_launcher = getlauncher("prepare_recording")
-            prepare_launcher.shutdown()
+            elif "start_freeplay" in options["action"]:
+                rospy.loginfo("Starting freeplay task")
 
-            return 'true'
+                prepare_launcher = getlauncher("prepare_recording")
+                prepare_launcher.start()
+                record_launcher = getlauncher("record")
+                record_launcher.setarg("output_file", os.path.join(expe.path, "freeplay.bag"))
+                record_launcher.setarg("duration", "20m")
+                record_launcher.start()
+                time.sleep(2)
 
-        else: 
-            rospy.logwarn("record: received unknown action %s" % str(options["action"]))
+                freeplay_publisher.publish(Empty())
+                return 'true'
+
+            elif "stop_freeplay" in options["action"]:
+                rospy.loginfo("Stopping freeplay task")
+
+                blankscreen_publisher.publish(Empty())
+
+                record_launcher = getlauncher("record")
+                record_launcher.shutdown()
+                prepare_launcher = getlauncher("prepare_recording")
+                prepare_launcher.shutdown()
+
+                return 'true'
+
+            elif "add_marker" in options["action"]:
+                mtype = options["type"][0]
+
+                time = expe.add_marker(mtype)
+                rospy.loginfo("Adding marker at t=%s secs (%s)" % (time, mtype))
+
+                return time
+
+            else: 
+                rospy.logwarn("record: received unknown action %s" % str(options["action"]))
+
+    except Exception as e:
+        rospy.logerr("Error processing the request! (%s %s)" % (path, str(options)))
+        rospy.logerr(traceback.format_exc())
 
     return supervisor_tpl.generate(page="records",
                                    path=path,

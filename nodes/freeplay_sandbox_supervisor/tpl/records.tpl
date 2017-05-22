@@ -38,7 +38,7 @@
                                 <h2 class="center deep-purple-text"><i class="large material-icons">person_pin</i></h2>
                                 <h5>General</h5>
                                 <p>
-                                <input name="purple-gender" type="radio" value="male" id="purple-male" />
+                                <input name="purple-gender" checked type="radio" value="male" id="purple-male" />
                                 <label for="purple-male">Male</label>
                                 <input name="purple-gender" type="radio" value="female" id="purple-female" />
                                 <label for="purple-female">Female</label>
@@ -79,7 +79,7 @@
                                 <h2 class="center amber-text"><i class="large material-icons">person_pin</i></h2>
                                 <h5>General</h5>
                                 <p>
-                                <input name="yellow-gender" type="radio" value="male" id="yellow-male" />
+                                <input name="yellow-gender" checked type="radio" value="male" id="yellow-male" />
                                 <label for="yellow-male">Male</label>
                                 <input name="yellow-gender" type="radio" value="female" id="yellow-female" />
                                 <label for="yellow-female">Female</label>
@@ -131,6 +131,7 @@
                     </p>
 
                     <a id="visual-tracking-btn" class="waves-effect waves-light btn" onclick="start_visual_tracking()">Start visual tracking task</a>
+                    <a class="waves-effect waves-teal btn-flat" onclick="$('#tutorial').show()">Skip</a>
 
                     <p>
                     <div id="visual-tracking-spinner" class="preloader-wrapper active" style="display:none;">
@@ -147,6 +148,11 @@
                     </p>
                 </div>
 
+                <div id="tutorial" class="center row" style="display:none;">
+                    <a id="tutorial-btn" class="waves-effect waves-light btn" onclick="start_tutorial()">Start tutorial</a>
+                    <a class="waves-effect waves-teal btn-flat" onclick="$('#freeplay').show()">Skip</a>
+                </div>
+
                 <div id="freeplay" class="center row" style="display:none;">
                     <p>
                     <div id="record_chip" class="center chip">
@@ -156,6 +162,14 @@
                     </p>
                     <a id="freeplay-btn" class="waves-effect waves-light btn" onclick="start_freeplay()">Start freeplay task</a>
                     <a id="stop-freeplay-btn" style="display:none" class="waves-effect waves-light btn" onclick="stop_freeplay()">Stop</a>
+
+                    <p>
+                    <a id="note-btn" class="waves-effect waves-light btn" onclick="add_marker('note')"><i class="material-icons">mode_edit</i></a>
+                    <a id="interesting-btn" class="light-green waves-effect waves-light btn" onclick="add_marker('interesting')"><i class="material-icons">thumb_up</i></a>
+                    <a id="issue-btn" class="amber waves-effect waves-light btn" onclick="add_marker('issue')"><i class="material-icons">new_releases</i></a>
+
+                    <p id="marker_info"></p>
+                    </p>
                 </div>
 
             </div>
@@ -350,6 +364,23 @@ function start_visual_tracking() {
         success: function(done) {
             $("#visual-tracking-btn").html('Visual tracking: completed');
             $("#visual-tracking-spinner").hide();
+            $("#tutorial").show();
+            }
+        });
+}
+
+function start_tutorial() {
+    console.log("Starting tutorial");
+    
+    $("#tutorial-btn").addClass('disabled');
+    $("#tutorial-btn").html('Starting...');
+
+    $.ajax({
+        url:'{{path}}?action=start_tutorial',
+        dataType: "json",
+        context: this,
+        success: function(done) {
+            $("#tutorial-btn").html('Tutorial: started');
             $("#freeplay").show();
             }
         });
@@ -388,6 +419,18 @@ function stop_freeplay() {
         });
 }
 
+function add_marker(type) {
+    console.log("Adding marker (" + type + ")");
+
+    $.ajax({
+        url:'{{path}}?action=add_marker&recordid=' + current_recordid + '&type=' + type,
+        dataType: "json",
+        context: this,
+        success: function(time) {
+            $("#marker_info").html('Marker added. Timestamp: <strong>' + time + '</strong>');
+            }
+        });
+}
 
 </script>
 

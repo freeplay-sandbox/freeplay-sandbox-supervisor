@@ -2,9 +2,13 @@ import datetime
 import errno
 import hashlib
 
+from collections import OrderedDict
+
 import re
 import os
 import os.path
+
+import rospy
 
 CHILDCHILD="childchild"
 CHILDROBOT="childrobot"
@@ -50,7 +54,7 @@ class Participant:
     def __str__(self):
         desc = "  - age: %d\n  - gender: %s\n  - details:\n" % (self.age, self.gender)
         for k,v in self.otherdetails.items():
-            desc += "   - " + k + ": " + v + "\n"
+            desc += "    - " + k + ": " + v + "\n"
         return desc
 
 class Experiment:
@@ -72,6 +76,9 @@ class Experiment:
                                     {"tablet-familiarity": demographics["yellow-tablet-familiarity"][0]})
 
         self.date = datetime.datetime.now()
+        self.rostime = rospy.Time.now()
+
+        self.markers = OrderedDict()
 
         self.path = os.path.join(BASE_PATH, make_valid_pathname(self.date))
         mkdir(self.path)
@@ -82,11 +89,16 @@ class Experiment:
         with open(os.path.join(self.path, "experiment.yaml"), 'w') as expe:
             expe.write("# Freeplay sandbox experiment -- recorded on the " + str(self.date))
             expe.write("\n")
-            expe.write("- date: %s\n" % str(self.date))
+            expe.write("- timestamp: %s\n" % str(self.rostime))
             expe.write("- condition: %s\n" % self.condition)
             expe.write("- purple-participant:\n" + str(self.purple))
             if self.condition == CHILDCHILD:
                 expe.write("- yellow-participant:\n" + str(self.yellow))
+            if self.markers:
+                expe.write("- markers:\n")
+            for mtime, mtype in self.markers.items():
+                expe.write("  - %s: %s\n" % (str(mtime), mtype))
+
 
     def __hash__(self):
         return hash(str(self.date))
@@ -94,3 +106,11 @@ class Experiment:
     def __repr__(self):
         return "experiment-" + hashlib.sha1(str(self.date)).hexdigest()
 
+    def add_marker(self, mtype):
+
+        mtime = rospy.Time.now() - self.rostime
+        self.markers[str(mtime.to_sec())] = mtype
+
+        self.save_experiment_details()
+
+        return str(mtime.secs)
