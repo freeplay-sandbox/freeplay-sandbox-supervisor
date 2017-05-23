@@ -59,9 +59,19 @@ class Participant:
 
 class Experiment:
 
-    def __init__(self, demographics):
+    def __init__(self):
 
-        print(str(demographics))
+        self.date = datetime.datetime.now()
+        self.rostime = None
+
+        self.markers = OrderedDict()
+
+        self.path = os.path.join(BASE_PATH, make_valid_pathname(self.date))
+        mkdir(self.path)
+
+        os.environ["ROS_LOG_DIR"] = os.path.join(self.path, "logs")
+
+    def save_demographics(self, demographics):
 
         self.condition = demographics["condition"][0]
 
@@ -75,13 +85,6 @@ class Experiment:
                                     demographics["yellow-gender"][0],
                                     {"tablet-familiarity": demographics["yellow-tablet-familiarity"][0]})
 
-        self.date = datetime.datetime.now()
-        self.rostime = rospy.Time.now()
-
-        self.markers = OrderedDict()
-
-        self.path = os.path.join(BASE_PATH, make_valid_pathname(self.date))
-        mkdir(self.path)
         self.save_experiment_details()
 
     def save_experiment_details(self):
@@ -99,6 +102,9 @@ class Experiment:
             for mtime, mtype in self.markers.items():
                 expe.write("  - %s: %s\n" % (str(mtime), mtype))
 
+    def start(self):
+
+        self.rostime = rospy.Time.now()
 
     def __hash__(self):
         return hash(str(self.date))

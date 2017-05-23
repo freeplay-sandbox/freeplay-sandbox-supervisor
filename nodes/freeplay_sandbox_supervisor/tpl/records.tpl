@@ -22,6 +22,9 @@
             <div class="section">
             <h3>New record</h3> {{ freespace }}
                 
+                <p>
+                <span id="record-id"></span>
+                </p>
 
                 <div class="center row">
                 <a id="childchildbtn" class="waves-effect waves-light btn" onclick="setcondition('childchild')">Child-child</a>
@@ -119,9 +122,6 @@
 
                 <div id="visual-tracking" class="center row" style="display:none;">
 
-                    <p>
-                    Record ID <span id="record-id"></span> created.
-                    </p>
 
                     <p>
                     <div id="record_visual_tracking_chip" class="center chip">
@@ -163,7 +163,7 @@
                     <a id="freeplay-btn" class="waves-effect waves-light btn" onclick="start_freeplay()">Start freeplay task</a>
                     <a id="stop-freeplay-btn" style="display:none" class="waves-effect waves-light btn" onclick="stop_freeplay()">Stop</a>
 
-                    <p>
+                    <p id="marker-btns" style="display:none">
                     <a id="note-btn" class="waves-effect waves-light btn" onclick="add_marker('note')"><i class="material-icons">mode_edit</i></a>
                     <a id="interesting-btn" class="light-green waves-effect waves-light btn" onclick="add_marker('interesting')"><i class="material-icons">thumb_up</i></a>
                     <a id="issue-btn" class="amber waves-effect waves-light btn" onclick="add_marker('issue')"><i class="material-icons">new_releases</i></a>
@@ -228,12 +228,12 @@ function perform(action, parameters) {
 
 
 function setcondition(cdt) {
+
+    initiate_experiment();
+
     //console.log(this); // points to the clicked input button
     //perform(this.id)
 
-    perform("start_sandbox");
-    perform("start_cameras");
-    perform("start_attention_tracking");
 
     condition = cdt;
 
@@ -249,6 +249,27 @@ function setcondition(cdt) {
 
     $("#participant-next-btn").show();
     startUpdateFaces();
+}
+
+function initiate_experiment() {
+    $.ajax({
+        url:'{{path}}?action=initiate_experiment',
+        dataType: "json",
+        context: this,
+        success: function(recordid) {
+            current_recordid = recordid;
+            $("#record-id").html("Record id " + recordid + " created");
+
+            // once the experiment is created, we know ROS logging is
+            // configured to store log files into the experiment directory
+            // we can then start the ROS nodes
+            perform("start_sandbox");
+            perform("start_cameras");
+            perform("start_attention_tracking");
+
+            }
+        });
+
 }
 
 function demographics_done() {
@@ -270,12 +291,10 @@ function demographics_done() {
 
 
     $.ajax({
-        url:'{{path}}?action=createrecord&' + $.param(experiment),
+        url:'{{path}}?action=savedemographics&recordid=' + current_recordid +  '&' + $.param(experiment),
         dataType: "json",
         context: this,
-        success: function(recordid) {
-            current_recordid = recordid;
-            $("#record-id").html(recordid);
+        success: function(done) {
             $("#visual-tracking").show();
             }
         });
@@ -399,6 +418,7 @@ function start_freeplay() {
         success: function(done) {
             $("#freeplay-btn").html('Freeplay: started');
             $("#stop-freeplay-btn").show();
+            $("#marker-btns").show();
             }
         });
 }
@@ -407,6 +427,7 @@ function stop_freeplay() {
     console.log("Starting freeplay");
     
     $("#stop-freeplay-btn").addClass('disabled');
+    $("#marker-btns").hide();
     $("#stop-freeplay-btn").html('Stopping...');
 
     $.ajax({

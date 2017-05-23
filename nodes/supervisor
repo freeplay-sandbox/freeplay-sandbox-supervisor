@@ -180,12 +180,23 @@ def record(path, options):
                 launcher.start()
 
 
-            elif "createrecord" in options["action"]:
-                rospy.loginfo("Creating new experiment with given demographics")
-                expe = Experiment(options)
+            elif "initiate_experiment" in options["action"]:
+
+                # first, stop all ROS nodes, so that we properly restart them with
+                # logging configured for storage within the next experiment folder.
+                for launcher in launchers:
+                    launcher.shutdown()
+
+                rospy.loginfo("Creating new experiment")
+                expe = Experiment()
                 records[repr(expe)] = expe
                 rospy.loginfo("Experiment %s created" % expe)
                 return json.dumps(repr(expe))
+
+            elif "savedemographics" in options["action"]:
+                rospy.loginfo("Saving demographics")
+                expe.save_demographics(options)
+                return json.dumps(True)
 
             elif "updatestate" in options["action"]:
                 return json.dumps({l.name: l.isrunning() for l in launchers})
@@ -233,6 +244,8 @@ def record(path, options):
                 record_launcher.start()
                 time.sleep(2)
 
+                expe.start()
+
                 freeplay_publisher.publish(Empty())
                 return 'true'
 
@@ -251,10 +264,10 @@ def record(path, options):
             elif "add_marker" in options["action"]:
                 mtype = options["type"][0]
 
-                time = expe.add_marker(mtype)
-                rospy.loginfo("Adding marker at t=%s secs (%s)" % (time, mtype))
+                mtime = expe.add_marker(mtype)
+                rospy.loginfo("Adding marker at t=%s secs (%s)" % (mtime, mtype))
 
-                return time
+                return mtime
 
             else: 
                 rospy.logwarn("record: received unknown action %s" % str(options["action"]))
