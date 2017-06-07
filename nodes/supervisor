@@ -247,7 +247,7 @@ def record(path, options):
                     # LD_LIBRARY_PATH as it contains old libraries. But when launching
                     # the robot, this needs to be added
                     env = os.environ
-                    env['LD_LIBRARY_PATH'] = env['HOME'] + "/applis/nao/naoqi-sdk-2.1.4.13-linux64/lib:" + env['HOME'] + "/applis/nao/pynaoqi-python2.7-2.1.4.13-linux64:" + env['LD_LIBRARY_PATH']
+                    env['LD_LIBRARY_PATH'] = env['LD_LIBRARY_PATH'] + ":" + env['HOME'] + "/nao/naoqi-sdk-2.1.4.13-linux64/lib"
                     ######
 
                     robot_launcher.start(env=env)
