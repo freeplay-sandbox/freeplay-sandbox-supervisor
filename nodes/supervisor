@@ -236,6 +236,10 @@ def record(path, options):
             elif "start_freeplay" in options["action"]:
                 rospy.loginfo("Starting freeplay task")
 
+                # if the cameras are still running (eg, visual tracking as been skipped), stop them now
+                launcher = getlauncher("dual_sr300")
+                launcher.shutdown()
+
                 if(expe.condition == CHILDROBOT):
                     rospy.loginfo("Starting the robot first")
                     robot_launcher = getlauncher("play")
