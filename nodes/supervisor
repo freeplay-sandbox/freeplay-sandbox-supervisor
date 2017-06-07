@@ -240,7 +240,7 @@ def record(path, options):
                 prepare_launcher.start()
                 record_launcher = getlauncher("record")
                 record_launcher.setarg("output_file", os.path.join(expe.path, "freeplay.bag"))
-                record_launcher.setarg("duration", "20m")
+                record_launcher.setarg("duration", "40m")
                 record_launcher.start()
                 time.sleep(2)
 
