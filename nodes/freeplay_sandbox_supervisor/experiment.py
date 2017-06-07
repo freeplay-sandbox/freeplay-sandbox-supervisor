@@ -41,25 +41,29 @@ def make_valid_pathname(value):
 
 class Participant:
 
-    def __init__(self, age, gender, otherdetails):
+    def __init__(self, condition, color):
+        now = datetime.datetime.now()
+        self.id = "%4d-%02d-%02d-%02d:%02d-%s%d" % (now.year, now.month, now.day, now.hour, now.minute, color, 1 if condition == CHILDCHILD else 2)
+
+    def setdetails(self, age, gender, otherdetails):
         self.age = int(age)
         self.gender = gender
         self.otherdetails = otherdetails
 
     def __repr__(self):
-        """ Not guaranteed to be unique!
-        """
-        return "participant-" + "+".join([str(self.age), self.gender])
+        return "participant-" + self.id
 
     def __str__(self):
-        desc = "  - age: %d\n  - gender: %s\n  - details:\n" % (self.age, self.gender)
+        desc = "  - id: %s\n  - age: %d\n  - gender: %s\n  - details:\n" % (self.id, self.age, self.gender)
         for k,v in self.otherdetails.items():
             desc += "    - " + k + ": " + v + "\n"
         return desc
 
 class Experiment:
 
-    def __init__(self):
+    def __init__(self, cdt):
+
+        self.condition = cdt
 
         self.date = datetime.datetime.now()
         self.rostime = None
@@ -71,19 +75,20 @@ class Experiment:
 
         os.environ["ROS_LOG_DIR"] = os.path.join(self.path, "logs")
 
+        self.purple = Participant(cdt, 'p')
+        self.yellow = Participant(cdt, 'y')
+
     def save_demographics(self, demographics):
 
-        self.condition = demographics["condition"][0]
 
-        self.purple = Participant(demographics["purple-age"][0],
-                                  demographics["purple-gender"][0],
-                                  {"tablet-familiarity": demographics["purple-tablet-familiarity"][0]})
+        self.purple.setdetails(demographics["purple-age"][0],
+                               demographics["purple-gender"][0],
+                               {"tablet-familiarity": demographics["purple-tablet-familiarity"][0]})
 
-        self.yellow = None
         if self.condition == CHILDCHILD:
-            self.yellow = Participant(demographics["yellow-age"][0],
-                                    demographics["yellow-gender"][0],
-                                    {"tablet-familiarity": demographics["yellow-tablet-familiarity"][0]})
+            self.yellow.setdetails(demographics["yellow-age"][0],
+                                   demographics["yellow-gender"][0],
+                                   {"tablet-familiarity": demographics["yellow-tablet-familiarity"][0]})
 
         self.save_experiment_details()
 

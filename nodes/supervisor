@@ -188,10 +188,10 @@ def record(path, options):
                     launcher.shutdown()
 
                 rospy.loginfo("Creating new experiment")
-                expe = Experiment()
+                expe = Experiment(options["cdt"][0])
                 records[repr(expe)] = expe
                 rospy.loginfo("Experiment %s created" % expe)
-                return json.dumps(repr(expe))
+                return json.dumps([repr(expe), expe.purple.id, expe.yellow.id])
 
             elif "savedemographics" in options["action"]:
                 rospy.loginfo("Saving demographics")

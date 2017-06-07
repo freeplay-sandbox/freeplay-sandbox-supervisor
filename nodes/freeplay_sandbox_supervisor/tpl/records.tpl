@@ -39,6 +39,9 @@
                                 <fieldset id="purple-form">
 
                                 <h2 class="center deep-purple-text"><i class="large material-icons">person_pin</i></h2>
+
+                                <strong>ID: <span id="purple-id"></span></strong>
+
                                 <h5>General</h5>
                                 <p>
                                 <input name="purple-gender" checked type="radio" value="male" id="purple-male" />
@@ -80,6 +83,7 @@
                             <form action="#">
                                 <fieldset id="yellow-form">
                                 <h2 class="center amber-text"><i class="large material-icons">person_pin</i></h2>
+                                <strong>ID: <span id="yellow-id"></span></strong>
                                 <h5>General</h5>
                                 <p>
                                 <input name="yellow-gender" checked type="radio" value="male" id="yellow-male" />
@@ -229,7 +233,7 @@ function perform(action, parameters) {
 
 function setcondition(cdt) {
 
-    initiate_experiment();
+    initiate_experiment(cdt);
 
     //console.log(this); // points to the clicked input button
     //perform(this.id)
@@ -251,14 +255,16 @@ function setcondition(cdt) {
     startUpdateFaces();
 }
 
-function initiate_experiment() {
+function initiate_experiment(cdt) {
     $.ajax({
-        url:'{{path}}?action=initiate_experiment',
+        url:'{{path}}?action=initiate_experiment&cdt=' + cdt,
         dataType: "json",
         context: this,
-        success: function(recordid) {
-            current_recordid = recordid;
-            $("#record-id").html("Record id " + recordid + " created");
+        success: function(ids) {
+            current_recordid = ids[0];
+            $("#record-id").html("Record id " + current_recordid + " created");
+            $("#purple-id").html(ids[1]);
+            $("#yellow-id").html(ids[2]);
 
             // once the experiment is created, we know ROS logging is
             // configured to store log files into the experiment directory
