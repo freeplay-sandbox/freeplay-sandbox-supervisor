@@ -167,6 +167,8 @@
                     <a id="freeplay-btn" class="waves-effect waves-light btn" onclick="start_freeplay()">Start freeplay task</a>
                     <a id="stop-freeplay-btn" style="display:none" class="waves-effect waves-light btn" onclick="stop_freeplay()">Stop</a>
 
+                    <p id="freeplay-elapsed-time" style="display:none"></p>
+
                     <p id="marker-btns" style="display:none">
                     <a id="note-btn" class="waves-effect waves-light btn" onclick="add_marker('note')"><i class="material-icons">mode_edit</i></a>
                     <a id="interesting-btn" class="light-green waves-effect waves-light btn" onclick="add_marker('interesting')"><i class="material-icons">thumb_up</i></a>
@@ -328,6 +330,13 @@ function updaterunningstate() {
 
 var intervalID = window.setInterval(updaterunningstate, 1000);
 
+var elapsedTime = 0;
+var elapsedTimeTimer = window.setInterval(function(){
+                elapsedTime++;
+                var secs = elapsedTime % 60;
+                $("#freeplay-elapsed-time").html("Elapsed time: " + Math.floor(elapsedTime/60) + ":" + (secs > 9 ? "":"0") + secs);
+                },1000);
+
 var faceDetectorInterval;
 
 function startUpdateFaces() {
@@ -423,6 +432,11 @@ function start_freeplay() {
         context: this,
         success: function(done) {
             $("#freeplay-btn").html('Freeplay: started');
+
+            // reset timer
+            elapsedTime = 0;
+            $("#freeplay-elapsed-time").show();
+
             $("#stop-freeplay-btn").show();
             $("#marker-btns").show();
             }
@@ -434,6 +448,7 @@ function stop_freeplay() {
     
     $("#stop-freeplay-btn").addClass('disabled');
     $("#marker-btns").hide();
+    $("#marker_info").hide();
     $("#stop-freeplay-btn").html('Stopping...');
 
     $.ajax({
@@ -442,6 +457,9 @@ function stop_freeplay() {
         context: this,
         success: function(done) {
             $("#stop-freeplay-btn").html('End of the study!');
+            clearInterval(elapsedTimeTimer);
+            var secs = elapsedTime % 60;
+            $("#freeplay-elapsed-time").html("<strong>Total time: " + Math.floor(elapsedTime/60) + ":" + (secs > 9 ? "":"0") + secs + "</strong>");
             }
         });
 }
