@@ -31,7 +31,7 @@ tutorial_publisher = rospy.Publisher('sandtray/signals/start_tutorial', Empty, q
 freeplay_publisher = rospy.Publisher('sandtray/signals/start_freeplay', Empty, queue_size=1)
 
 from freeplay_sandbox_supervisor.launcher import Launcher
-from freeplay_sandbox_supervisor.experiment import Experiment
+from freeplay_sandbox_supervisor.experiment import Experiment, CHILDCHILD, CHILDROBOT
 
 package = "freeplay_sandbox"
 
@@ -235,6 +235,22 @@ def record(path, options):
 
             elif "start_freeplay" in options["action"]:
                 rospy.loginfo("Starting freeplay task")
+
+                if(expe.condition == CHILDROBOT):
+                    rospy.loginfo("Starting the robot first")
+                    robot_launcher = getlauncher("play")
+                    robot_launcher.setarg("with_robot", True)
+                    robot_launcher.setarg("arm_reach", 0.5)
+
+                    ##### WORKAROUND FOR NAOQI MESSING UP WITH THE ENVIRONMENT
+                    # in general, we does not want the naoqi SDK to appear in the
+                    # LD_LIBRARY_PATH as it contains old libraries. But when launching
+                    # the robot, this needs to be added
+                    env = os.environ
+                    env['LD_LIBRARY_PATH'] = env['HOME'] + "/applis/nao/naoqi-sdk-2.1.4.13-linux64/lib:" + env['HOME'] + "/applis/nao/pynaoqi-python2.7-2.1.4.13-linux64:" + env['LD_LIBRARY_PATH']
+                    ######
+
+                    robot_launcher.start(env=env)
 
                 prepare_launcher = getlauncher("prepare_recording")
                 prepare_launcher.start()

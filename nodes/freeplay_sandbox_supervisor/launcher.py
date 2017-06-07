@@ -81,7 +81,7 @@ class Launcher:
         rospy.loginfo("Setting arg <%s> to <%s> for %s" % (arg, str(value), self.prettyname))
         if self.args[arg]["type"] == "bool":
             # special case for checkboxes: checked == 'on'; unchecked == 'off'
-            self.args[arg]["value"] = True if value.lower() == "true" else False
+            self.args[arg]["value"] = True if (value is True or value.lower() == "true") else False
         else:
             self.args[arg]["value"] = value
 
@@ -96,7 +96,7 @@ class Launcher:
         return ["roslaunch", self.package, self.name + ".launch"] + argcmd
 
 
-    def start(self, stdout=sys.stdout, stderr=sys.stderr):
+    def start(self, stdout=sys.stdout, stderr=sys.stderr, env=None):
 
         if self.isrunning():
             rospy.logwarn("Launch file <%s> is already running. PID: %d" % (self.name, self.pid))
@@ -108,7 +108,7 @@ class Launcher:
             rospy.loginfo("Executing:")
             rospy.loginfo(" ".join(cmd))
             rospy.loginfo("****************************")
-            self.pid = subprocess.Popen(cmd, stdout=stdout, stderr=stderr).pid
+            self.pid = subprocess.Popen(cmd, stdout=stdout, stderr=stderr, env=env).pid
 
     def isrunning(self):
         """Returns true if this launch file is running, False otherwise
