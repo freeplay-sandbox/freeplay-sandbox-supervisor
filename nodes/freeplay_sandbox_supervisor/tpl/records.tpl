@@ -179,7 +179,7 @@
                 </div>
 
             </div>
-
+<!--
             <div class="section">
 
             <h3> Past records </h3>
@@ -208,6 +208,7 @@
             </table>
 
         </div>
+-->
 </div>
 <script>
 
