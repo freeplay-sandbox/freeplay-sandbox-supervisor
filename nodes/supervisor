@@ -270,6 +270,9 @@ def record(path, options):
 
                 blankscreen_publisher.publish(Empty())
 
+                robot_launcher = getlauncher("play")
+                robot_launcher.shutdown()
+
                 record_launcher = getlauncher("record")
                 record_launcher.shutdown()
                 prepare_launcher = getlauncher("prepare_recording")
