@@ -103,63 +103,7 @@ def process_launch(options):
 
     return "true" if launcher.isrunning() else "false"
 
-def status(path, options):
-
-    if "action" in options:
-        if "start" in options["action"]:
-            return process_launch(options)
-        elif "stop" in options["action"]:
-            return process_launch(options)
-        elif "setarg" in options["action"]:
-            launcher = getlauncher(options["launch"][0])
-            launcher.setarg(options["arg"][0],
-                            options.get("value", [None])[0])
-            return launcher_tpl.generate(launcher=launcher, showargs=True)
-        elif "updatestate" in options["action"]:
-            return json.dumps({l.name: l.isrunning() for l in launchers})
-
-
-
-    pingable, unpingable = rosnode.rosnode_ping_all()
-    return supervisor_tpl.generate(page="status",
-                                   path=path,
-                                   launchers=launchers,
-                                   nodes_ok=pingable, 
-                                   nodes_ko=unpingable)
-
-def manage(path, options):
-
-    if "action" in options:
-        if "itemstostash" in options["action"]:
-            rospy.loginfo("Sending items back to stash")
-            rospy.Publisher('sandtray/signals/items_to_stash', Empty, queue_size=1).publish(Empty())
-        if "reshuffleitems" in options["action"]:
-            rospy.loginfo("Reshuffling items")
-            rospy.Publisher('sandtray/signals/shuffle_items', Empty, queue_size=1).publish(Empty())
-        if "clearbackground" in options["action"]:
-            rospy.loginfo("Clearing background")
-            rospy.Publisher('sandtray/signals/clear_drawing', Empty, queue_size=1).publish(Empty())
-        if "localisation" in options["action"]:
-            rospy.loginfo("Triggering robot localisation")
-            rospy.Publisher('sandtray/signals/robot_localising', Empty, queue_size=1).publish(Empty())
-
-        if "blank" in options["action"]:
-            rospy.loginfo("Blanking user interface")
-            blankscreen_publisher.publish(Empty())
-        if "tutorial" in options["action"]:
-            rospy.loginfo("Switching to tutorial mode")
-            tutorial_publisher.publish(Empty())
-        if "freeplay" in options["action"]:
-            rospy.loginfo("Switching to freeplay mode")
-            freeplay_publisher.publish(Empty())
-        if "visualtracking" in options["action"]:
-            rospy.loginfo("Switching to visual tracking mode")
-            visual_tracking_publisher.publish(Empty())
-
-    return supervisor_tpl.generate(page="manage",
-                                   path=path)
-
-def record(path, options):
+def process(path, options):
 
     try:
         expe = None
@@ -167,18 +111,84 @@ def record(path, options):
             expe = records[options["recordid"][0]]
 
         if "action" in options:
-            if "start_sandbox" in options["action"]:
+            ############################################
+            # status
+            ############################################
+            if "start" in options["action"]:
+                return process_launch(options)
+
+            elif "stop" in options["action"]:
+                return process_launch(options)
+
+            elif "setarg" in options["action"]:
+                launcher = getlauncher(options["launch"][0])
+                launcher.setarg(options["arg"][0],
+                                options.get("value", [None])[0])
+                return launcher_tpl.generate(launcher=launcher, showargs=True)
+
+            elif "updatestate" in options["action"]:
+                return json.dumps({l.name: l.isrunning() for l in launchers})
+
+            ############################################
+            # manage
+            ############################################
+            elif "itemstostash" in options["action"]:
+                rospy.loginfo("Sending items back to stash")
+                rospy.Publisher('sandtray/signals/items_to_stash', Empty, queue_size=1).publish(Empty())
+                return "true"
+
+            elif "reshuffleitems" in options["action"]:
+                rospy.loginfo("Reshuffling items")
+                rospy.Publisher('sandtray/signals/shuffle_items', Empty, queue_size=1).publish(Empty())
+                return "true"
+
+            elif "clearbackground" in options["action"]:
+                rospy.loginfo("Clearing background")
+                rospy.Publisher('sandtray/signals/clear_drawing', Empty, queue_size=1).publish(Empty())
+                return "true"
+
+            elif "localisation" in options["action"]:
+                rospy.loginfo("Triggering robot localisation")
+                rospy.Publisher('sandtray/signals/robot_localising', Empty, queue_size=1).publish(Empty())
+                return "true"
+
+            ############################################
+            # records
+            ############################################
+            elif "blank" in options["action"]:
+                rospy.loginfo("Blanking user interface")
+                blankscreen_publisher.publish(Empty())
+                return "true"
+
+            elif "tutorial" in options["action"]:
+                rospy.loginfo("Switching to tutorial mode")
+                tutorial_publisher.publish(Empty())
+                return "true"
+
+            elif "freeplay" in options["action"]:
+                rospy.loginfo("Switching to freeplay mode")
+                freeplay_publisher.publish(Empty())
+                return "true"
+
+            elif "visualtracking" in options["action"]:
+                rospy.loginfo("Switching to visual tracking mode")
+                visual_tracking_publisher.publish(Empty())
+                return "true"
+
+            elif "start_sandbox" in options["action"]:
                 launcher = getlauncher("interactive_playground")
                 launcher.start()
+                return "true"
 
             elif "start_cameras" in options["action"]:
                 launcher = getlauncher("dual_sr300")
                 launcher.start()
+                return "true"
 
             elif "start_attention_tracking" in options["action"]:
                 launcher = getlauncher("dual_attention_tracking")
                 launcher.start()
-
+                return "true"
 
             elif "initiate_experiment" in options["action"]:
 
@@ -299,10 +309,12 @@ def record(path, options):
         rospy.logerr("Error processing the request! (%s %s)" % (path, str(options)))
         rospy.logerr(traceback.format_exc())
 
-    return supervisor_tpl.generate(page="records",
-                                   path=path,
+    pingable, unpingable = rosnode.rosnode_ping_all()
+    return supervisor_tpl.generate(path=path,
                                    freespace=getfreespace(),
-                                   records=[])
+                                   launchers=launchers,
+                                   nodes_ok=pingable, 
+                                   nodes_ko=unpingable)
 
 def app(environ, start_response):
 
@@ -313,12 +325,7 @@ def app(environ, start_response):
     options = urlparse.parse_qs(environ["QUERY_STRING"])
     rospy.logdebug("Incoming request. Path: %s; options passed:\n%s" % (path, str(options)))
 
-    if path.endswith("manage"):
-        return imap(fixencoding, manage(path,options))
-    elif path.endswith("status"):
-        return imap(fixencoding, status(path,options))
-    else: # root path: /
-        return imap(fixencoding, record(path,options))
+    return imap(fixencoding, process(path,options))
 
 if __name__ == '__main__': 
 

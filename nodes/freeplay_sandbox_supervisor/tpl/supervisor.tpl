@@ -30,23 +30,56 @@
             <nav>
                 <div class="nav-wrapper">
                     <ul class="right">
-                        <li class="{{ 'active' if page == 'records' }}"><a href="/"><i class="material-icons left">assignment_ind</i> Records</a></li>
-                        <li class="{{ 'active' if page == 'status' }}"><a href="/status"><i class="material-icons left">search</i> Status</a></li>
-                        <li class="{{ 'active' if page == 'manage' }}"><a href="/manage"><i class="material-icons left">mode_edit</i> Manage</a></li>
+                        <li id="nav-records" class="active"><a onclick="switchTo('records')"><i class="material-icons left">assignment_ind</i> Records</a></li>
+                        <li id="nav-status"><a onclick="switchTo('status')"><i class="material-icons left">search</i> Status</a></li>
+                        <li id="nav-manage"><a onclick="switchTo('manage')"><i class="material-icons left">mode_edit</i> Manage</a></li>
                         <li><a onclick="document.documentElement.mozRequestFullScreen();"><i class="fa fa-arrows-alt"></i></a></li>
                     </ul>
                 </div>
             </nav>
         </div>
 
-    {% if page == "records" %}
+        <div id="records-tab">
         {% include 'records.tpl' %}
-    {% elif page == "status" %}
+        </div>
+        <div id="status-tab" style="display:none;">
         {% include 'status.tpl' %}
-    {% elif page == "manage" %}
+        </div>
+        <div id="manage-tab" style="display:none;">
         {% include 'manage.tpl' %}
-    {% endif %}
+       </div>
 
+        <script>
+        function switchTo(tab) {
+
+            if(tab === "records") {
+                $("#nav-records").addClass("active")
+                $("#records-tab").css("display", "block")
+            } 
+            else {
+                $("#nav-records").removeClass("active")
+                $("#records-tab").css("display", "none")
+            };
+
+            if(tab === "status") {
+                $("#nav-status").addClass("active")
+                $("#status-tab").css("display", "block")
+            } 
+            else {
+                $("#nav-status").removeClass("active")
+                $("#status-tab").css("display", "none")
+            };
+
+            if(tab === "manage") {
+                $("#nav-manage").addClass("active")
+                $("#manage-tab").css("display", "block")
+            } 
+            else {
+                $("#nav-manage").removeClass("active")
+                $("#manage-tab").css("display", "none")
+            };
+        }
+        </script>
 </body>
 </html>
 
