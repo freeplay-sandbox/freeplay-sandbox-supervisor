@@ -6,14 +6,17 @@
                 <button style="margin:7px 0;width:80%" class="blue-grey waves-effect waves-light btn-large" alt="Blank screen" onclick="perform('blank')"><i class="fa fa-desktop"></i> Blank interface</button>
             </div>
             <div class="col s6">
+                <button style="margin:7px 0;width:80%" class="amber waves-effect waves-light btn-large" alt="Visual tracking" onclick="perform('visualtracking')"><i class="fa fa-desktop"></i> Visual tracking</button>
+            </div>            <div class="col s6">
                 <button style="margin:7px 0;width:80%" class="lime waves-effect waves-light btn-large" alt="Tutorial" onclick="perform('tutorial')"><i class="fa fa-desktop"></i> Tutorial</button>
             </div>
             <div class="col s6">
                 <button style="margin:7px 0;width:80%" class="amber waves-effect waves-light btn-large" alt="Freeplay" onclick="perform('freeplay')"><i class="fa fa-desktop"></i> Freeplay</button>
             </div>
             <div class="col s6">
-                <button style="margin:7px 0;width:80%" class="amber waves-effect waves-light btn-large" alt="Visual tracking" onclick="perform('visualtracking')"><i class="fa fa-desktop"></i> Show visual tracking task</button>
+                <button style="margin:7px 0;width:80%" class="amber waves-effect waves-light btn-large" alt="Items placement" onclick="perform('items-placement')"><i class="fa fa-desktop"></i> Items placement</button>
             </div>
+
         </div>
 
     </p>

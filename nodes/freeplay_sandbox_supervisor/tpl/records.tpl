@@ -154,6 +154,11 @@
 
                 <div id="tutorial" class="center row" style="display:none;">
                     <a id="tutorial-btn" class="waves-effect waves-light btn" onclick="start_tutorial()">Start tutorial</a>
+                    <a class="waves-effect waves-teal btn-flat" onclick="$('#items-placement').show()">Skip</a>
+                </div>
+
+                <div id="items-placement" class="center row" style="display:none;">
+                    <a id="items-placement-btn" class="waves-effect waves-light btn" onclick="start_items_placement()">Start Items placement</a>
                     <a class="waves-effect waves-teal btn-flat" onclick="$('#freeplay').show()">Skip</a>
                 </div>
 
@@ -421,6 +426,23 @@ function start_tutorial() {
         context: this,
         success: function(done) {
             $("#tutorial-btn").html('Tutorial: started');
+            $("#items-placement").show();
+            }
+        });
+}
+
+function start_items_placement() {
+    console.log("Starting items placement");
+    
+    $("#items-placement-btn").addClass('disabled');
+    $("#items-placement-btn").html('Starting...');
+
+    $.ajax({
+        url:'{{path}}?action=items-placement',
+        dataType: "json",
+        context: this,
+        success: function(done) {
+            $("#items-placement-btn").html('Items placement: started');
             $("#freeplay").show();
             }
         });

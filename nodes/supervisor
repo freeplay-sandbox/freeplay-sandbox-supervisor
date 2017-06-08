@@ -27,6 +27,7 @@ rospy.init_node('freeplay_sandbox_supervisor')
 
 blankscreen_publisher = rospy.Publisher('sandtray/signals/blank_interface', Empty, queue_size=1)
 visual_tracking_publisher = rospy.Publisher('sandtray/signals/start_visual_tracking', Empty, queue_size=1)
+items_placement_publisher = rospy.Publisher('sandtray/signals/start_items_placement', Empty, queue_size=1)
 tutorial_publisher = rospy.Publisher('sandtray/signals/start_tutorial', Empty, queue_size=1)
 freeplay_publisher = rospy.Publisher('sandtray/signals/start_freeplay', Empty, queue_size=1)
 
@@ -152,9 +153,6 @@ def process(path, options):
                 rospy.Publisher('sandtray/signals/robot_localising', Empty, queue_size=1).publish(Empty())
                 return "true"
 
-            ############################################
-            # records
-            ############################################
             elif "blank" in options["action"]:
                 rospy.loginfo("Blanking user interface")
                 blankscreen_publisher.publish(Empty())
@@ -164,6 +162,11 @@ def process(path, options):
                 rospy.loginfo("Switching to tutorial mode")
                 tutorial_publisher.publish(Empty())
                 return "true"
+
+            elif "items-placement" in options["action"]:
+                rospy.loginfo("Swtiching to items placement task")
+                items_placement_publisher.publish(Empty())
+                return 'true'
 
             elif "freeplay" in options["action"]:
                 rospy.loginfo("Switching to freeplay mode")
@@ -175,6 +178,9 @@ def process(path, options):
                 visual_tracking_publisher.publish(Empty())
                 return "true"
 
+            ############################################
+            # records
+            ############################################
             elif "start_sandbox" in options["action"]:
                 launcher = getlauncher("interactive_playground")
                 launcher.start()
