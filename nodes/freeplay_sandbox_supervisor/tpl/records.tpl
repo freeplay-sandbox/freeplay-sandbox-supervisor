@@ -316,6 +316,11 @@ function updaterunningstate() {
         context: this,
         success: function(runningstates) {
                 for (var l in runningstates) {
+
+                    /////// status' page!
+                    togglerunning($("#"+l+"_startstop")[0], runningstates[l]);
+                    ///////
+
                     if($("#"+l+"_chip").length) {
                         if(runningstates[l]) {
                             $("#"+l+"_chip").css("background-color", "#c4eab0");
@@ -329,7 +334,7 @@ function updaterunningstate() {
         });
 }
 
-var intervalID = window.setInterval(updaterunningstate, 1000);
+var stateUpdater = window.setInterval(updaterunningstate, 1000);
 
 var elapsedTime = 0;
 var elapsedTimeTimer = window.setInterval(function(){
@@ -411,7 +416,7 @@ function start_tutorial() {
     $("#tutorial-btn").html('Starting...');
 
     $.ajax({
-        url:'{{path}}?action=start_tutorial',
+        url:'{{path}}?action=tutorial',
         dataType: "json",
         context: this,
         success: function(done) {

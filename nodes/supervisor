@@ -208,9 +208,6 @@ def process(path, options):
                 expe.save_demographics(options)
                 return json.dumps(True)
 
-            elif "updatestate" in options["action"]:
-                return json.dumps({l.name: l.isrunning() for l in launchers})
-
             elif "getdetectedfaces" in options["action"]:
                 return json.dumps({"yellow": nb_yellow_faces, "purple": nb_purple_faces})
 
@@ -238,17 +235,14 @@ def process(path, options):
                 rospy.loginfo("Visual tracking task finished")
                 return 'true'
 
-            elif "start_tutorial" in options["action"]:
-                rospy.loginfo("Starting tutorial task")
-                tutorial_publisher.publish(Empty())
-                return 'true'
-
             elif "start_freeplay" in options["action"]:
                 rospy.loginfo("Starting freeplay task")
 
                 # if the cameras are still running (eg, visual tracking as been skipped), stop them now
                 launcher = getlauncher("dual_sr300")
                 launcher.shutdown()
+
+                freeplay_publisher.publish(Empty())
 
                 if(expe.condition == CHILDROBOT):
                     rospy.loginfo("Starting the robot first")
@@ -276,7 +270,6 @@ def process(path, options):
 
                 expe.start()
 
-                freeplay_publisher.publish(Empty())
                 return 'true'
 
             elif "stop_freeplay" in options["action"]:

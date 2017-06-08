@@ -60,6 +60,7 @@ function setarg(launchfile, arg, value) {
         });
 }
 
+// note: this function is called from 'updaterunningstate' in records.tpl
 function togglerunning(btn, isrunning) {
                     $(btn).toggleClass('green',!isrunning);
                     $(btn).toggleClass('red',isrunning);
@@ -85,22 +86,6 @@ function launch(launchfile, action) {
 
         });
 }
-
-function updaterunningstate() {
-    $.ajax({
-        url:'{{path}}?action=updatestate',
-        dataType: "json",
-        context: this,
-        success: function(runningstates) {
-                for (var l in runningstates) {
-                    togglerunning($("#"+l+"_startstop")[0], runningstates[l]);
-                    }
-
-                }
-        });
-}
-
-var intervalID = window.setInterval(updaterunningstate, 1000);
 
 </script>
 
