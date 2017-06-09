@@ -30,6 +30,11 @@ visual_tracking_publisher = rospy.Publisher('sandtray/signals/start_visual_track
 items_placement_publisher = rospy.Publisher('sandtray/signals/start_items_placement', Empty, queue_size=1)
 tutorial_publisher = rospy.Publisher('sandtray/signals/start_tutorial', Empty, queue_size=1)
 freeplay_publisher = rospy.Publisher('sandtray/signals/start_freeplay', Empty, queue_size=1)
+screenshot_pub = rospy.Publisher('sandtray/screenshot', String, queue_size=1)
+sandtraysignallocalising_pub = rospy.Publisher('sandtray/signals/robot_localising', Empty, queue_size=1)
+sandtraysignalcleardrawing_pub = rospy.Publisher('sandtray/signals/clear_drawing', Empty, queue_size=1)
+sandtraysignalshuffleitems_pub = rospy.Publisher('sandtray/signals/shuffle_items', Empty, queue_size=1)
+sandtraysignalitemstostash_pub = rospy.Publisher('sandtray/signals/items_to_stash', Empty, queue_size=1)
 
 from freeplay_sandbox_supervisor.launcher import Launcher
 from freeplay_sandbox_supervisor.experiment import Experiment, CHILDCHILD, CHILDROBOT
@@ -135,22 +140,22 @@ def process(path, options):
             ############################################
             elif "itemstostash" in options["action"]:
                 rospy.loginfo("Sending items back to stash")
-                rospy.Publisher('sandtray/signals/items_to_stash', Empty, queue_size=1).publish(Empty())
+                sandtraysignalitemstostash_pub.publish(Empty())
                 return "true"
 
             elif "reshuffleitems" in options["action"]:
                 rospy.loginfo("Reshuffling items")
-                rospy.Publisher('sandtray/signals/shuffle_items', Empty, queue_size=1).publish(Empty())
+                sandtraysignalshuffleitems_pub.publish(Empty())
                 return "true"
 
             elif "clearbackground" in options["action"]:
                 rospy.loginfo("Clearing background")
-                rospy.Publisher('sandtray/signals/clear_drawing', Empty, queue_size=1).publish(Empty())
+                sandtraysignalcleardrawing_pub.publish(Empty())
                 return "true"
 
             elif "localisation" in options["action"]:
                 rospy.loginfo("Triggering robot localisation")
-                rospy.Publisher('sandtray/signals/robot_localising', Empty, queue_size=1).publish(Empty())
+                sandtraysignallocalising_pub.publish(Empty())
                 return "true"
 
             elif "blank" in options["action"]:
