@@ -78,6 +78,10 @@ class Experiment:
         self.purple = Participant(cdt, 'p')
         self.yellow = Participant(cdt, 'y')
 
+        # used to store extra informations on the experiment that might have been
+        # added to the tablet interface
+        self.extras = {}
+
     def save_demographics(self, demographics):
 
 
@@ -104,8 +108,12 @@ class Experiment:
                 expe.write("- yellow-participant:\n" + str(self.yellow))
             if self.markers:
                 expe.write("- markers:\n")
-            for mtime, mtype in self.markers.items():
-                expe.write("  - %s: %s\n" % (str(mtime), mtype))
+                for mtime, mtype in self.markers.items():
+                    expe.write("  - %s: %s\n" % (str(mtime), mtype))
+            if self.extras:
+                expe.write("- extras:\n")
+                for key, value in self.extras.items():
+                    expe.write("  - %s: %s\n" % (str(key), str(value)))
 
     def start(self):
 
@@ -125,3 +133,9 @@ class Experiment:
         self.save_experiment_details()
 
         return str(mtime.secs)
+
+    def add_extra(self, key, value):
+
+        self.extras[key] = value
+        self.save_experiment_details()
+

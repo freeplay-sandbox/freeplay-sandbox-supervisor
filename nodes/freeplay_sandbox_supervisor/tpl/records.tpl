@@ -187,6 +187,15 @@
                     </p>
                 </div>
 
+                <div id="finalisation" style="display:none">
+                    <p class="range-field">
+                    <label for="social-engagement-scale">Level of social engagement (1: none, 5: strong)</label>
+                    <input type="range" id="social-engagement-scale" min="1" max="5" value="3" />
+                    </p>
+
+                    <a id="note-btn" class="orange darken-4 waves-effect waves-light btn" onclick="finalise()"><i class="material-icons">done</i> Finalise record</a>
+                </div>
+
             </div>
 <!--
             <div class="section">
@@ -287,6 +296,18 @@ function initiate_experiment(cdt) {
             perform("start_cameras");
             perform("start_attention_tracking");
 
+            }
+        });
+
+}
+
+function addextra(key, value) {
+    $.ajax({
+        url:'{{path}}?action=add_extra&recordid=' + current_recordid +  '&' + $.param({"name":key,"value":value}),
+        dataType: "json",
+        context: this,
+        success: function(done) {
+                console.log("Added extra information to experiment: " + key + " -> " + value);
             }
         });
 
@@ -496,8 +517,16 @@ function stop_freeplay() {
             clearInterval(elapsedTimeTimer);
             var secs = elapsedTime % 60;
             $("#freeplay-elapsed-time").html("<strong>Total time: " + Math.floor(elapsedTime/60) + ":" + (secs > 9 ? "":"0") + secs + "</strong>");
+
+            $("#finalisation").show();
             }
         });
+}
+
+function finalise() {
+
+    addextra("social-engagement", $("#social-engagement-scale").val())
+
 }
 
 function add_marker(type) {

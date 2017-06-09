@@ -329,6 +329,16 @@ def process(path, options):
 
                 return mtime
 
+            elif "add_extra" in options["action"]:
+                key = options["name"][0]
+                value = options["value"][0]
+
+                expe.add_extra(key, value)
+                rospy.loginfo("Adding extra information: %s -> %s" % (key, value))
+
+                return 'true'
+
+
             else: 
                 rospy.logwarn("record: received unknown action %s" % str(options["action"]))
 
