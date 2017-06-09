@@ -36,6 +36,9 @@
             <div class="col s6">
                 <button style="margin:7px 0;width:80%" class="waves-effect waves-light btn-large" alt="Trigger robot localisation" onclick="perform('localisation')"><i class="fa fa-compass"></i> Trigger robot localisation</button>
             </div>
+            <div class="col s6">
+                <button style="margin:7px 0;width:80%" class="waves-effect waves-light btn-large" alt="Screenshot" onclick="perform('screenshot')"><i class="fa fa-desktop"></i> Take screenshot</button>
+            </div>
 
         </div>
         </p>

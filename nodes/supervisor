@@ -13,10 +13,12 @@ import traceback
 import rospy
 from std_msgs.msg import Empty
 from std_msgs.msg import Char
+from std_msgs.msg import String
 import rosnode
 
 from rospkg import RosPack
 
+import datetime
 import time
 
 import json
@@ -159,6 +161,24 @@ def process(path, options):
             elif "localisation" in options["action"]:
                 rospy.loginfo("Triggering robot localisation")
                 sandtraysignallocalising_pub.publish(Empty())
+                return "true"
+
+            elif "screenshot" in options["action"]:
+
+                now = datetime.datetime.now()
+                filename = "%4d-%02d-%02d-%02d:%02d:%02d.png" % (now.year, now.month, now.day, now.hour, now.minute, now.second)
+
+                if 'prefix' in options:
+                    filename = options['prefix'][0] + "-" + filename
+
+                if expe:
+                    path = os.path.join(expe.path, filename)
+                else:
+                    import tempfile
+                    path = os.path.join(tempfile.gettempdir(), filename)
+
+                rospy.loginfo("Taking a screenshot -- saved to %s" % path)
+                screenshot_pub.publish(String(path))
                 return "true"
 
             elif "blank" in options["action"]:

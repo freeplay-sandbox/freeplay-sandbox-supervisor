@@ -160,6 +160,9 @@
                 <div id="items-placement" class="center row" style="display:none;">
                     <a id="items-placement-btn" class="waves-effect waves-light btn" onclick="start_items_placement()">Start Items placement</a>
                     <a class="waves-effect waves-teal btn-flat" onclick="$('#freeplay').show()">Skip</a>
+                    <p id="items-placement-btns" style="display:none">
+                    <a id="screenshot-btn" class="amber waves-effect waves-light btn" onclick="perform('screenshot',{'prefix':'items-placement'})"><i class="fa fa-desktop"></i> screenshot</a>
+                    </p>
                 </div>
 
                 <div id="freeplay" class="center row" style="display:none;">
@@ -178,6 +181,7 @@
                     <a id="note-btn" class="waves-effect waves-light btn" onclick="add_marker('note')"><i class="material-icons">mode_edit</i></a>
                     <a id="interesting-btn" class="light-green waves-effect waves-light btn" onclick="add_marker('interesting')"><i class="material-icons">thumb_up</i></a>
                     <a id="issue-btn" class="amber waves-effect waves-light btn" onclick="add_marker('issue')"><i class="material-icons">new_releases</i></a>
+                    <a id="screenshot-btn" class="amber waves-effect waves-light btn" onclick="add_marker('screenshot')"><i class="fa fa-desktop"></i></a>
 
                     <p id="marker_info"></p>
                     </p>
@@ -445,6 +449,7 @@ function start_items_placement() {
         context: this,
         success: function(done) {
             $("#items-placement-btn").html('Items placement: started');
+            $("#items-placement-btns").show();
             $("#freeplay").show();
             }
         });
@@ -453,6 +458,7 @@ function start_items_placement() {
 function start_freeplay() {
     console.log("Starting freeplay");
     
+    $("#items-placement-btns").hide();
     $("#freeplay-btn").addClass('disabled');
     $("#freeplay-btn").html('Starting...');
 
@@ -502,7 +508,10 @@ function add_marker(type) {
         dataType: "json",
         context: this,
         success: function(time) {
-            $("#marker_info").html('Marker added. Timestamp: <strong>' + time + '</strong>');
+            if (type==="screenshot") {
+                perform('screenshot',{'prefix':'freeplay-' + time});
+            }
+            $("#marker_info").html('Marker <strong>' + type + '</strong> added. Timestamp: <strong>' + time + '</strong>');
             }
         });
 }
