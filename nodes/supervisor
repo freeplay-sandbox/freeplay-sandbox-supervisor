@@ -338,9 +338,21 @@ def process(path, options):
 
                 return 'true'
 
+            elif "finalise" in options["action"]:
+                rospy.loginfo("Finalising the experiment")
+                expe.save_experiment_details()
+
+                for launcher in launchers:
+                    launcher.shutdown()
+                rospy.loginfo("All launchers stopped!")
+
+                return 'true'
+
+
 
             else: 
                 rospy.logwarn("record: received unknown action %s" % str(options["action"]))
+                return 'false'
 
     except Exception as e:
         rospy.logerr("Error processing the request! (%s %s)" % (path, str(options)))

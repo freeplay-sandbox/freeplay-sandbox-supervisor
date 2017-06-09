@@ -35,8 +35,8 @@
                     <div id="purple-participant" class="col s12 m6" style="display:none;">
                         <div class="icon-block">
 
-                            <form action="#">
-                                <fieldset id="purple-form">
+                            <form id="purple-form" action="#">
+                                <fieldset id="purple-form-fieldset">
 
                                 <h2 class="center deep-purple-text"><i class="large material-icons">person_pin</i></h2>
 
@@ -80,8 +80,8 @@
                     <div id="yellow-participant" class="col s12 m6" style="display:none;">
                         <div class="icon-block">
 
-                            <form action="#">
-                                <fieldset id="yellow-form">
+                            <form id="yellow-form" action="#">
+                                <fieldset id="yellow-form-fieldset">
                                 <h2 class="center amber-text"><i class="large material-icons">person_pin</i></h2>
                                 <strong>ID: <span id="yellow-id"></span></strong>
                                 <h5>General</h5>
@@ -173,7 +173,7 @@
                     </div>
                     </p>
                     <a id="freeplay-btn" class="waves-effect waves-light btn" onclick="start_freeplay()">Start freeplay task</a>
-                    <a id="stop-freeplay-btn" style="display:none" class="waves-effect waves-light btn" onclick="stop_freeplay()">Stop</a>
+                    <a id="stop-freeplay-btn" style="display:none" class="orange darken-4 waves-effect waves-light btn" onclick="stop_freeplay()">Stop</a>
 
                     <p id="freeplay-elapsed-time" style="display:none"></p>
 
@@ -187,13 +187,15 @@
                     </p>
                 </div>
 
-                <div id="finalisation" style="display:none">
-                    <p class="range-field">
-                    <label for="social-engagement-scale">Level of social engagement (1: none, 5: strong)</label>
-                    <input type="range" id="social-engagement-scale" min="1" max="5" value="3" />
-                    </p>
+                <div id="finalisation" class="center row" style="display:none">
+                    <form id="final-form">
+                        <p class="range-field">
+                        <label for="social-engagement-scale">Level of social engagement (1: none, 5: strong)</label>
+                        <input type="range" id="social-engagement-scale" min="1" max="5" value="3" />
+                        </p>
+                    </form>
 
-                    <a id="note-btn" class="orange darken-4 waves-effect waves-light btn" onclick="finalise()"><i class="material-icons">done</i> Finalise record</a>
+                    <a id="finalise-btn" class="orange darken-4 waves-effect waves-light btn" onclick="finalise()"><i class="material-icons">done</i> Finalise record and start new</a>
                 </div>
 
             </div>
@@ -315,8 +317,8 @@ function addextra(key, value) {
 
 function demographics_done() {
 
-    $("#purple-form").prop("disabled","true");
-    $("#yellow-form").prop("disabled","true");
+    $("#purple-form-fieldset").prop("disabled","true");
+    $("#yellow-form-fieldset").prop("disabled","true");
     $("#participant-next-btn").hide();
 
 
@@ -369,11 +371,7 @@ function updaterunningstate() {
 var stateUpdater = window.setInterval(updaterunningstate, 1000);
 
 var elapsedTime = 0;
-var elapsedTimeTimer = window.setInterval(function(){
-                elapsedTime++;
-                var secs = elapsedTime % 60;
-                $("#freeplay-elapsed-time").html("Elapsed time: " + Math.floor(elapsedTime/60) + ":" + (secs > 9 ? "":"0") + secs);
-                },1000);
+var elapsedTimeTimer = undefined;
 
 var faceDetectorInterval;
 
@@ -409,7 +407,7 @@ function updatedetectedfaces() {
                         $("#participant-next-btn-link").html('Save demographics');
                 }
                 }
-               else { // cdt: child-robot
+               else if (condition === "childrobot") {
                 if (faces["purple"] == 1) {
                         //stopUpdateFaces();
                         //$("#nb_purple_faces_chip").hide();
@@ -461,6 +459,7 @@ function start_tutorial() {
 function start_items_placement() {
     console.log("Starting items placement");
     
+    $("#tutorial-btn").html('Tutorial: finished');
     $("#items-placement-btn").addClass('disabled');
     $("#items-placement-btn").html('Starting...');
 
@@ -479,8 +478,10 @@ function start_items_placement() {
 function start_freeplay() {
     console.log("Starting freeplay");
     
+    $("#items-placement-btn").html('Items placement: finished');
     $("#items-placement-btns").hide();
     $("#freeplay-btn").addClass('disabled');
+    $("#stop-freeplay-btn").removeClass('disabled');
     $("#freeplay-btn").html('Starting...');
 
     $.ajax({
@@ -492,6 +493,12 @@ function start_freeplay() {
 
             // reset timer
             elapsedTime = 0;
+            elapsedTimeTimer = window.setInterval(function(){
+                    elapsedTime++;
+                    var secs = elapsedTime % 60;
+                $   ("#freeplay-elapsed-time").html("Elapsed time: " + Math.floor(elapsedTime/60) + ":" + (secs > 9 ? "":"0") + secs);
+                },1000);
+
             $("#freeplay-elapsed-time").show();
 
             $("#stop-freeplay-btn").show();
@@ -513,7 +520,8 @@ function stop_freeplay() {
         dataType: "json",
         context: this,
         success: function(done) {
-            $("#stop-freeplay-btn").html('End of the study!');
+            $("#freeplay-btn").html('End of the study!');
+            $("#stop-freeplay-btn").hide();
             clearInterval(elapsedTimeTimer);
             var secs = elapsedTime % 60;
             $("#freeplay-elapsed-time").html("<strong>Total time: " + Math.floor(elapsedTime/60) + ":" + (secs > 9 ? "":"0") + secs + "</strong>");
@@ -525,8 +533,67 @@ function stop_freeplay() {
 
 function finalise() {
 
+    $("#finalise-btn").html('Stopping everything...');
     addextra("social-engagement", $("#social-engagement-scale").val())
 
+    $.ajax({
+        url:'{{path}}?action=finalise&recordid=' + current_recordid,
+        dataType: "json",
+        context: this,
+        success: function(time) {
+            reset();
+            }
+        });
+
+}
+
+function reset() {
+
+    stopUpdateFaces();
+
+    condition = "";
+    current_recordid = "";
+
+    $("#record-id").html("");
+    $("#purple-id").html("");
+    $("#yellow-id").html("");
+    $("#childrobotbtn").removeClass("disabled");
+    $("#childchildbtn").removeClass("disabled");
+    $("#purple-participant").hide();
+    $("#yellow-participant").hide();
+
+    $("#purple-form-fieldset").prop("disabled","false");
+    $("#yellow-form-fieldset").prop("disabled","false");
+
+    $("#purple-form")[0].reset();
+    $("#yellow-form")[0].reset();
+
+    $("#participant-next-btn-link").addClass('disabled');
+    $("#participant-next-btn-link").html('Waiting for faces to be detected');
+
+    $("#visual-tracking-btn").removeClass('disabled');
+    $("#visual-tracking-btn").html('Start visual tracking task');
+    $("#visual-tracking-spinner").hide();
+    $("#visual-tracking").hide();
+
+    $("#tutorial-btn").removeClass('disabled');
+    $("#tutorial-btn").html('Start tutorial');
+    $("#tutorial").hide();
+
+    $("#items-placement-btn").removeClass('disabled');
+    $("#items-placement-btn").html('Start Items placement');
+    $("#items-placement").hide();
+
+    $("#freeplay-btn").removeClass('disabled');
+    $("#freeplay-btn").html('Start freeplay');
+    $("#freeplay-elapsed-time").html("");
+    $("#freeplay-elapsed-time").hide();
+    $("#stop-freeplay-btn").html('Stop');
+    $("#freeplay").hide();
+
+    $("#final-form")[0].reset();
+    $("#finalisation").hide();
+    $("#finalise-btn").html('<i class="material-icons">done</i> Finalise record and start new');
 }
 
 function add_marker(type) {
