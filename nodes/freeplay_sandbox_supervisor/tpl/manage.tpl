@@ -43,18 +43,6 @@
 </div>
 
 <script>
-
-function perform(action) {
-    $.ajax({
-        url:'{{path}}?action=' + action,
-        dataType: "json",
-        context: this,
-        success: function(isrunning) {
-                    $(this).toggleClass('btn-primary', 'btn-secondary');
-                }
-
-        });
-}
-
+// function perform implemented in records.tpl
 </script>
 

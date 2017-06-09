@@ -227,6 +227,8 @@ function perform(action, parameters) {
     // if parameters provided, turn them into a query string
     url = (typeof parameters !== 'undefined') ?  url + "&" + $.param(parameters) : url;
 
+    if(current_recordid !== "") {url = url +  "&recordid=" + current_recordid;}
+
     $.ajax({
         url: url,
         dataType: "json",
@@ -472,7 +474,7 @@ function start_freeplay() {
 }
 
 function stop_freeplay() {
-    console.log("Starting freeplay");
+    console.log("Stopping freeplay");
     
     $("#stop-freeplay-btn").addClass('disabled');
     $("#marker-btns").hide();
