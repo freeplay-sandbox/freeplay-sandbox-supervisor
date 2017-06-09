@@ -114,7 +114,10 @@ def process(path, options):
     try:
         expe = None
         if "recordid" in options:
-            expe = records[options["recordid"][0]]
+            try:
+                expe = records[options["recordid"][0]]
+            except KeyError as ke:
+                rospy.logwarn("No experiment with recordid %s" % options["recordid"][0])
 
         if "action" in options:
             ############################################
