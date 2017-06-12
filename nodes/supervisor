@@ -104,8 +104,17 @@ def process_launch(options):
         rospy.logwarn("Attempting to launch inexistant %s" % launchfile)
         return False
 
+    ##### WORKAROUND FOR NAOQI MESSING UP WITH THE ENVIRONMENT
+    # in general, we does not want the naoqi SDK to appear in the
+    # LD_LIBRARY_PATH as it contains old libraries. But when launching
+    # the robot, this needs to be added
+    env = dict(os.environ)
+    if(name == "play"):
+        env['LD_LIBRARY_PATH'] = env['LD_LIBRARY_PATH'] + ":" + env['HOME'] + "/nao/naoqi-sdk-2.1.4.13-linux64/lib"
+    ######
+
     if "start" in options["action"]:
-        launcher.start()
+        launcher.start(env=env)
     elif "stop" in options["action"]:
         launcher.shutdown()
 
@@ -281,6 +290,9 @@ def process(path, options):
                 if(expe.condition == CHILDROBOT):
                     rospy.loginfo("Starting the robot first")
                     robot_launcher = getlauncher("play")
+                    robotip = options['robot-ip'][0];
+                    rospy.loginfo("Setting the robot IP address to %s" % robotip)
+                    robot_launcher.setarg("nao_ip", robotip)
                     robot_launcher.setarg("with_robot", True)
                     robot_launcher.setarg("arm_reach", 0.5)
 
@@ -288,7 +300,7 @@ def process(path, options):
                     # in general, we does not want the naoqi SDK to appear in the
                     # LD_LIBRARY_PATH as it contains old libraries. But when launching
                     # the robot, this needs to be added
-                    env = os.environ
+                    env = dict(os.environ)
                     env['LD_LIBRARY_PATH'] = env['LD_LIBRARY_PATH'] + ":" + env['HOME'] + "/nao/naoqi-sdk-2.1.4.13-linux64/lib"
                     ######
 

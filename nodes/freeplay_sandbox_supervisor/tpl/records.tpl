@@ -159,7 +159,7 @@
 
                 <div id="items-placement" class="center row" style="display:none;">
                     <a id="items-placement-btn" class="waves-effect waves-light btn" onclick="start_items_placement()">Start Items placement</a>
-                    <a class="waves-effect waves-teal btn-flat" onclick="$('#freeplay').show()">Skip</a>
+                    <a class="waves-effect waves-teal btn-flat" onclick="showfreeplay()">Skip</a>
                     <p id="items-placement-btns" style="display:none">
                     <a id="screenshot-btn" class="amber waves-effect waves-light btn" onclick="perform('screenshot',{'prefix':'items-placement'})"><i class="fa fa-desktop"></i> screenshot</a>
                     </p>
@@ -170,6 +170,10 @@
                     <div id="record_chip" class="center chip">
                         <i class="material-icons" style="vertical-align:middle">voicemail</i>
                         record
+                    </div>
+                    <div id="robot-conf" style="display:none">
+                        <label for="robot-ip">Robot IP</label>
+                        <input id="robot-ip" type='text' placeholder='xxx.xxx.xxx.xxx' value='192.168.2.105' name='robot IP' style="width:50%" />
                     </div>
                     </p>
                     <a id="freeplay-btn" class="waves-effect waves-light btn" onclick="start_freeplay()">Start freeplay task</a>
@@ -470,9 +474,16 @@ function start_items_placement() {
         success: function(done) {
             $("#items-placement-btn").html('Items placement: started');
             $("#items-placement-btns").show();
-            $("#freeplay").show();
-            }
+            showfreeplay();
+          }
         });
+}
+
+function showfreeplay() {
+    $("#freeplay").show();
+    if (condition === "childrobot") {
+        $("#robot-conf").show();
+    }
 }
 
 function start_freeplay() {
@@ -481,11 +492,15 @@ function start_freeplay() {
     $("#items-placement-btn").html('Items placement: finished');
     $("#items-placement-btns").hide();
     $("#freeplay-btn").addClass('disabled');
+    $("#robot-conf").hide();
+
     $("#stop-freeplay-btn").removeClass('disabled');
     $("#freeplay-btn").html('Starting...');
 
+    var robot_ip = $("#robot-ip").val();
+
     $.ajax({
-        url:'{{path}}?action=start_freeplay&recordid=' + current_recordid,
+        url:'{{path}}?action=start_freeplay&recordid=' + current_recordid + '&robot-ip=' + robot_ip,
         dataType: "json",
         context: this,
         success: function(done) {
@@ -584,6 +599,7 @@ function reset() {
     $("#items-placement-btn").html('Start Items placement');
     $("#items-placement").hide();
 
+    $("#robot-conf").hide();
     $("#freeplay-btn").removeClass('disabled');
     $("#freeplay-btn").html('Start freeplay');
     $("#freeplay-elapsed-time").html("");
