@@ -158,7 +158,14 @@
                 </div>
 
                 <div id="items-placement" class="center row" style="display:none;">
+                    <p>
+                    <div id="record_items_placement_chip" class="center chip">
+                        <i class="material-icons" style="vertical-align:middle">voicemail</i>
+                        record_items_placement
+                    </div>
+                    </p>
                     <a id="items-placement-btn" class="waves-effect waves-light btn" onclick="start_items_placement()">Start Items placement</a>
+                    <a id="stop-items-placement-btn" style="display:none" class="orange darken-4 waves-effect waves-light btn" onclick="stop_items_placement()">Stop</a>
                     <a class="waves-effect waves-teal btn-flat" onclick="showfreeplay()">Skip</a>
                     <p id="items-placement-btns" style="display:none">
                     <a id="screenshot-btn" class="amber waves-effect waves-light btn" onclick="perform('screenshot',{'prefix':'items-placement'})"><i class="fa fa-desktop"></i> screenshot</a>
@@ -466,18 +473,38 @@ function start_items_placement() {
     $("#tutorial-btn").html('Tutorial: finished');
     $("#items-placement-btn").addClass('disabled');
     $("#items-placement-btn").html('Starting...');
+    $("#stop-items-placement-btn").removeClass('disabled');
 
     $.ajax({
-        url:'{{path}}?action=items-placement',
+        url:'{{path}}?action=start_items_placement&recordid=' + current_recordid,
         dataType: "json",
         context: this,
         success: function(done) {
             $("#items-placement-btn").html('Items placement: started');
             $("#items-placement-btns").show();
-            showfreeplay();
+            $("#stop-items-placement-btn").show();
           }
         });
 }
+
+function stop_items_placement() {
+    console.log("Stopping items placement");
+    
+    $("#stop-items-placement-btn").addClass('disabled');
+    $("#stop-items-placement-btn").html('Stopping...');
+
+    $.ajax({
+        url:'{{path}}?action=stop_items_placement',
+        dataType: "json",
+        context: this,
+        success: function(done) {
+            $("#items-placement-btn").html('Items placement: finished');
+            $("#stop-items-placement-btn").hide();
+            showfreeplay();
+            }
+        });
+}
+
 
 function showfreeplay() {
     $("#freeplay").show();
@@ -489,7 +516,6 @@ function showfreeplay() {
 function start_freeplay() {
     console.log("Starting freeplay");
     
-    $("#items-placement-btn").html('Items placement: finished');
     $("#items-placement-btns").hide();
     $("#freeplay-btn").addClass('disabled');
     $("#robot-conf").hide();
@@ -526,9 +552,9 @@ function stop_freeplay() {
     console.log("Stopping freeplay");
     
     $("#stop-freeplay-btn").addClass('disabled');
+    $("#stop-freeplay-btn").html('Stopping...');
     $("#marker-btns").hide();
     $("#marker_info").hide();
-    $("#stop-freeplay-btn").html('Stopping...');
 
     $.ajax({
         url:'{{path}}?action=stop_freeplay',
@@ -598,6 +624,7 @@ function reset() {
     $("#items-placement-btn").removeClass('disabled');
     $("#items-placement-btn").html('Start Items placement');
     $("#items-placement").hide();
+    $("#stop-items-placement-btn").html('Stop');
 
     $("#robot-conf").hide();
     $("#freeplay-btn").removeClass('disabled');

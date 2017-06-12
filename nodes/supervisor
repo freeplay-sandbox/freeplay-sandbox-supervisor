@@ -278,12 +278,44 @@ def process(path, options):
                 rospy.loginfo("Visual tracking task finished")
                 return 'true'
 
+            elif "start_items_placement" in options["action"]:
+                rospy.loginfo("Starting the items placement task")
+
+                launcher = getlauncher("dual_sr300")
+                launcher.shutdown()
+
+                prepare_launcher = getlauncher("prepare_recording")
+                prepare_launcher.start()
+
+                launcher = getlauncher("record_items_placement")
+                launcher.setarg("output_file", os.path.join(expe.path, "items_placement.bag"))
+                launcher.setarg("duration", "15m")
+                launcher.start()
+
+                items_placement_publisher.publish(Empty())
+                return 'true'
+
+            elif "stop_items_placement" in options["action"]:
+                rospy.loginfo("Stopping items placement")
+
+                record_launcher = getlauncher("record_items_placement")
+                record_launcher.shutdown()
+
+                prepare_launcher = getlauncher("prepare_recording")
+                prepare_launcher.shutdown()
+
+                return 'true'
+
             elif "start_freeplay" in options["action"]:
                 rospy.loginfo("Starting freeplay task")
 
                 # if the cameras are still running (eg, visual tracking as been skipped), stop them now
                 launcher = getlauncher("dual_sr300")
                 launcher.shutdown()
+
+                prepare_launcher = getlauncher("prepare_recording")
+                prepare_launcher.shutdown()
+                #######################################################
 
                 freeplay_publisher.publish(Empty())
 
