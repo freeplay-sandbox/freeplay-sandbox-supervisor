@@ -109,7 +109,7 @@ def process_launch(options):
     # LD_LIBRARY_PATH as it contains old libraries. But when launching
     # the robot, this needs to be added
     env = dict(os.environ)
-    if(name == "play"):
+    if(launcher.name == "play"):
         env['LD_LIBRARY_PATH'] = env['LD_LIBRARY_PATH'] + ":" + env['HOME'] + "/nao/naoqi-sdk-2.1.4.13-linux64/lib"
     ######
 
