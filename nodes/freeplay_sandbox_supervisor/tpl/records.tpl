@@ -328,8 +328,8 @@ function addextra(key, value) {
 
 function demographics_done() {
 
-    $("#purple-form-fieldset").prop("disabled","true");
-    $("#yellow-form-fieldset").prop("disabled","true");
+    $("#purple-form-fieldset").prop("disabled",true);
+    $("#yellow-form-fieldset").prop("disabled",true);
     $("#participant-next-btn").hide();
 
 
@@ -603,8 +603,8 @@ function reset() {
     $("#purple-participant").hide();
     $("#yellow-participant").hide();
 
-    $("#purple-form-fieldset").prop("disabled","false");
-    $("#yellow-form-fieldset").prop("disabled","false");
+    $("#purple-form-fieldset").prop("disabled", false);
+    $("#yellow-form-fieldset").prop("disabled", false);
 
     $("#purple-form")[0].reset();
     $("#yellow-form")[0].reset();
