@@ -544,6 +544,7 @@ function start_freeplay() {
 
             $("#stop-freeplay-btn").show();
             $("#marker-btns").show();
+            $("#marker_info").show();
             }
         });
 }
