@@ -54,9 +54,9 @@ class Participant:
         return "participant-" + self.id
 
     def __str__(self):
-        desc = "  - id: %s\n  - age: %d\n  - gender: %s\n  - details:\n" % (self.id, self.age, self.gender)
+        desc = "  id: %s\n  age: %d\n  gender: %s\n  details:\n" % (self.id, self.age, self.gender)
         for k,v in self.otherdetails.items():
-            desc += "    - " + k + ": " + v + "\n"
+            desc += "    " + k + ": " + v + "\n"
         return desc
 
 class Experiment:
@@ -101,19 +101,19 @@ class Experiment:
         with open(os.path.join(self.path, "experiment.yaml"), 'w') as expe:
             expe.write("# Freeplay sandbox experiment -- recorded on the " + str(self.date))
             expe.write("\n")
-            expe.write("- timestamp: %s\n" % str(self.rostime))
-            expe.write("- condition: %s\n" % self.condition)
-            expe.write("- purple-participant:\n" + str(self.purple))
+            expe.write("timestamp: %s\n" % str(self.rostime))
+            expe.write("condition: %s\n" % self.condition)
+            expe.write("purple-participant:\n" + str(self.purple))
             if self.condition == CHILDCHILD:
-                expe.write("- yellow-participant:\n" + str(self.yellow))
+                expe.write("yellow-participant:\n" + str(self.yellow))
             if self.markers:
-                expe.write("- markers:\n")
+                expe.write("markers:\n")
                 for mtime, mtype in self.markers.items():
-                    expe.write("  - %s: %s\n" % (str(mtime), mtype))
+                    expe.write("  %s: %s\n" % (str(mtime), mtype))
             if self.extras:
-                expe.write("- extras:\n")
+                expe.write("extras:\n")
                 for key, value in self.extras.items():
-                    expe.write("  - %s: %s\n" % (str(key), str(value)))
+                    expe.write("  %s: %s\n" % (str(key), str(value)))
 
     def start(self):
 
