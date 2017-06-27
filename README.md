@@ -7,6 +7,8 @@ QtQuick-based GUI](https://github.com/severin-lemaignan/freeplay-sandbox-qt) of
 the 'Free-play Sandbox' experimental framework for Cognitive Human-Robot
 Interaction research.*
 
+![Supervisor screenshot](docs/supervisor.png)
+
 This repository contains a CGI server and a web interface to control the
 Free-play sandox experiment: start/stop nodes; manipulation of the QtQuick
 interface; recording of participants.
