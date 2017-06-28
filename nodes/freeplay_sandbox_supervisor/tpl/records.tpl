@@ -31,6 +31,11 @@
                 <a id="childrobotbtn" class="waves-effect waves-light btn" onclick="setcondition('childrobot')">Child-robot</a>
                 </div>
 
+                <div id="robot-conf" style="display:none">
+                    <label for="robot-ip">Robot IP</label>
+                    <input id="robot-ip" type='text' placeholder='xxx.xxx.xxx.xxx' value='192.168.2.105' name='robot IP' style="width:50%" />
+                </div>
+
                 <div class="row">
                     <div id="purple-participant" class="col s12 m6" style="display:none;">
                         <div class="icon-block">
@@ -178,10 +183,6 @@
                         <i class="material-icons" style="vertical-align:middle">voicemail</i>
                         record
                     </div>
-                    <div id="robot-conf" style="display:none">
-                        <label for="robot-ip">Robot IP</label>
-                        <input id="robot-ip" type='text' placeholder='xxx.xxx.xxx.xxx' value='192.168.2.105' name='robot IP' style="width:50%" />
-                    </div>
                     </p>
                     <a id="freeplay-btn" class="waves-effect waves-light btn" onclick="start_freeplay()">Start freeplay task</a>
                     <a id="stop-freeplay-btn" style="display:none" class="orange darken-4 waves-effect waves-light btn" onclick="stop_freeplay()">Stop</a>
@@ -283,6 +284,7 @@ function setcondition(cdt) {
         $("#yellow-participant").show();
     }
     else {
+        $("#robot-conf").show();
         $("#childchildbtn").addClass("disabled");
         $("#purple-participant").show();
     }
@@ -292,6 +294,7 @@ function setcondition(cdt) {
 }
 
 function initiate_experiment(cdt) {
+
     $.ajax({
         url:'{{path}}?action=initiate_experiment&cdt=' + cdt,
         dataType: "json",
@@ -475,8 +478,10 @@ function start_items_placement() {
     $("#items-placement-btn").html('Starting...');
     $("#stop-items-placement-btn").removeClass('disabled');
 
+    var robot_ip = $("#robot-ip").val();
+
     $.ajax({
-        url:'{{path}}?action=start_items_placement&recordid=' + current_recordid,
+        url:'{{path}}?action=start_items_placement&recordid=' + current_recordid + '&robot-ip=' + robot_ip,
         dataType: "json",
         context: this,
         success: function(done) {
@@ -508,9 +513,6 @@ function stop_items_placement() {
 
 function showfreeplay() {
     $("#freeplay").show();
-    if (condition === "childrobot") {
-        $("#robot-conf").show();
-    }
 }
 
 function start_freeplay() {
@@ -518,7 +520,6 @@ function start_freeplay() {
     
     $("#items-placement-btns").hide();
     $("#freeplay-btn").addClass('disabled');
-    $("#robot-conf").hide();
 
     $("#stop-freeplay-btn").removeClass('disabled');
     $("#freeplay-btn").html('Starting...');
