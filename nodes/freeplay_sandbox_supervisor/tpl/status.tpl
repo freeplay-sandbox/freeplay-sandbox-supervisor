@@ -23,7 +23,7 @@
     <thead>
         <tr>
         <th>Status</th>
-        <th>ROS node</th>
+        <th>script</th>
         <th>not used</th>
         <th>not used</th>
         </tr>
@@ -60,7 +60,6 @@ function setarg(launchfile, arg, value) {
         });
 }
 
-// note: this function is called from 'updaterunningstate' in records.tpl
 function togglerunning(btn, isrunning) {
                     $(btn).toggleClass('green',!isrunning);
                     $(btn).toggleClass('red',isrunning);
@@ -74,6 +73,34 @@ function togglerunning(btn, isrunning) {
                     }
 
 }
+
+function updaterunningstate() {
+    $.ajax({
+        url:'{{path}}?action=updatestate',
+        dataType: "json",
+        context: this,
+        success: function(runningstates) {
+                for (var l in runningstates) {
+
+                    /////// status' page!
+                    togglerunning($("#"+l+"_startstop")[0], runningstates[l]);
+                    ///////
+
+                    if($("#"+l+"_chip").length) {
+                        if(runningstates[l]) {
+                            $("#"+l+"_chip").css("background-color", "#c4eab0");
+                        }
+                        else {
+                            $("#"+l+"_chip").css("background-color", "#eac2b0");
+                        }
+                    }
+                }
+            }
+        });
+}
+
+var stateUpdater = window.setInterval(updaterunningstate, 1000);
+
 
 function launch(launchfile, action) {
     $.ajax({
