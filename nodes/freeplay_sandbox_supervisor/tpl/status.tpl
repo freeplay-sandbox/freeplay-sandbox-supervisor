@@ -1,20 +1,25 @@
-    <p>
-    <table class="table table-striped table-hover">
-    <thead>
-        <tr>
-        <th style="width: 50px"></th>
-        <th style="width: 400px"></th>
-        <th style="width: 50px"></th>
-        <th></th>
-        </tr>
-    </thead>
-    <tbody>
+<style>
+.statuses {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-gap: 30px;
+}
+</style>
+
+   <p>
+    <!--<table class="table table-striped table-hover">-->
+	<section class="statuses">
         {% for launcher in launchers %}
         {% include 'launcher.tpl' %}
         {% endfor %}
-    </tbody>
-    </table>
+	</section>
     </p>
+
+    <p>
+
+    <a id="finalise-btn" class="orange darken-4 waves-effect waves-light btn" onclick="finalise()"><i class="material-icons">done</i> End session</a>
+
+	</p>
 
     <div class="page-header">
         <h1>Nodes</h1>
@@ -58,6 +63,21 @@ function setarg(launchfile, arg, value) {
                     $(this).parents("tr").replaceWith(data);
                 }
         });
+}
+
+function finalise() {
+
+    $("#finalise-btn").html('Stopping everything...');
+
+    $.ajax({
+        url:'{{path}}?action=finalise',
+        dataType: "json",
+        context: this,
+        success: function(time) {
+    	    $("#finalise-btn").html('Finished!');
+            }
+        });
+
 }
 
 function togglerunning(btn, isrunning) {

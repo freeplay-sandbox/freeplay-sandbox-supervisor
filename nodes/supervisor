@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 from itertools import imap
 from flup.server.fcgi import WSGIServer
@@ -11,6 +11,7 @@ from jinja2 import Environment, PackageLoader
 
 import threading
 import os
+import stat
 import traceback
 
 import datetime
@@ -23,17 +24,26 @@ import subprocess
 
 from freeplay_sandbox_supervisor.launcher import Launcher
 
-ROOT = "/home/skadge/src/engagement_architecture"
+ROOTS = ["/home/katiewinkle/src/engagement_architecture",
+        "/home/katiewinkle/src/couchto5k-facial-features/build/devel/lib/facialexpression",
+        "/home/katiewinkle/src/couchto5k-sensors/src"]
+
+def is_executable(path):
+    return stat.S_IXUSR & os.stat(path)[stat.ST_MODE]
 
 launchers = []
 records = {}
 
-for root, dirs, files in os.walk(ROOT):
-    for file in files:
-        if file.endswith(".py"):
-            logging.info("Loading script %s" % file)
-            launchers.append(Launcher(os.path.join(root, file), ROOT))
+for ROOT in ROOTS:
+    logging.info("Looking for nodes in %s..." % ROOT)
+    for root, dirs, files in os.walk(ROOT):
+        for file in files:
+            if is_executable(os.path.join(ROOT, root, file)):
+                logging.info("Loading script %s" % file)
+                launchers.append(Launcher(os.path.join(root, file), ROOT))
+        break # by break, we avoid descending into subfolders
 
+launchers = sorted(launchers, key=repr)
 
 logging.info("Loading the HTML templates...")
 env = Environment(loader=PackageLoader('freeplay_sandbox_supervisor', 'tpl'))
@@ -284,7 +294,7 @@ def process(path, options):
 #                return 'true'
 #
             elif "finalise" in options["action"]:
-                logging.info("Finalising the experiment")
+                logging.warning("Finalising the session")
 
                 for launcher in launchers:
                     launcher.shutdown()

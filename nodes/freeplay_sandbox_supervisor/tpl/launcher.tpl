@@ -1,3 +1,5 @@
+<article>
+<table>
 <tr>
     <td>{% if launcher.reachable %}
         {% if launcher.readytolaunch %}
@@ -48,4 +50,5 @@
         {% endif %}
     </td>
 </tr>
-
+</table>
+</article>

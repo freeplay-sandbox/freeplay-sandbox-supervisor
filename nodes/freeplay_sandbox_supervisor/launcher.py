@@ -7,21 +7,25 @@ import sys
 import subprocess
 import psutil
 
+# HACK!!!
+SPECIAL_CASES = {"facialexpression_node": ["-device", "0"]}
+
 class Launcher:
-    def __init__(self, script, workingdir):
+    def __init__(self, script, workingdir, args=None):
 
         self.workingdir = workingdir
         self.script = script
-        self.name = script.split("/")[-1].split(".py")[0]
-        self.prettyname = self.name.replace("_", " ")
+        self.name = script.split("/")[-1]
+        self.prettyname = self.name.replace("_", " ").split(".py")[0]
 
         self.reachable=True
         self.desc = ""
 
-        self.args = {}
+        self.args = args if args else {}
 
         self.has_args = bool(self.args)
-        self.readytolaunch = self.checkargs()
+
+        self.readytolaunch=True
 
         self.pid = None
 
@@ -29,32 +33,22 @@ class Launcher:
         if(self.pid):
             logging.warn("Launch file <%s> is already running. Fine, I'm attaching myself to it." % self.name)
 
-    def checkargs(self):
-        """Check whether all the arguments are defined
-        """
-        for k,v in self.args.items():
-            if v["value"] == None:
-                return False
-        return True
+    def __repr__(self):
+        return self.name
+
 
     def setarg(self, arg, value):
 
         logging.info("Setting arg <%s> to <%s> for %s" % (arg, str(value), self.prettyname))
-        if self.args[arg]["type"] == "bool":
-            # special case for checkboxes: checked == 'on'; unchecked == 'off'
-            self.args[arg]["value"] = True if (value is True or value.lower() == "true") else False
-        else:
-            self.args[arg]["value"] = value
-
-        self.args[arg]["default_value"] = False # manually modified value!
-
-        logging.info(str(self.args[arg]))
-
-        self.readytolaunch = self.checkargs()
+        self.args[arg] = value
 
     def make_rl_cmd(self):
-        argcmd = [a + ":=" + str(v["value"]) for a,v in self.args.items() if not v["default_value"]]
-        return ["python", os.path.join(self.workingdir, self.name + ".py")] + argcmd
+        argcmd = [a + " " + str(v) for a,v in self.args.items()]
+
+        if self.name in SPECIAL_CASES:
+            argcmd = SPECIAL_CASES[self.name]
+
+        return [os.path.join(self.workingdir, self.name)] + argcmd
 
 
     def start(self, stdout=sys.stdout, stderr=sys.stderr, env=None):
@@ -68,14 +62,14 @@ class Launcher:
             logging.info("****************************")
             logging.info("Executing:")
             logging.info(" ".join(cmd))
-            self.pid = subprocess.Popen(cmd, stdout=stdout, stderr=stderr, env=env).pid
-            logging.info("Checking everything is ok..." % str(self.pid))
+            self.pid = subprocess.Popen(cmd, stdout=stdout, stderr=stderr, env=env, cwd=self.workingdir).pid
+            logging.info("Checking everything is ok...")
             time.sleep(0.5)
 
             if not self.isrunning():
                 logging.warning("Warning: script %s has died just after starting!" % str(self.name))
             else:
-                logger.info("Process started with PID %s.")
+                logging.info("Process started with PID %s." % str(self.pid))
 
             logging.info("****************************")
 
@@ -132,13 +126,19 @@ class Launcher:
 
             for p in children:
                 p.terminate()
-            gone, still_alive = psutil.wait_procs(children, timeout=15)
+            gone, still_alive = psutil.wait_procs(children, timeout=5)
+
             for p in still_alive:
                 p.kill()
 
             proc.terminate()
-            gone, still_alive = psutil.wait_procs([proc], timeout=15)
+            gone, still_alive = psutil.wait_procs([proc], timeout=5)
+
+            if not still_alive:
+                logging.info("%s stopped." % self.name)
+
             for p in still_alive:
+                logging.warning("%s not stopped! Killing it." % self.name)
                 p.kill()
 
 
